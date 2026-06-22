@@ -21,6 +21,8 @@
 
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -54,9 +56,11 @@
     <main>
         <div class="container fade-in">
             <div class="card" style="text-align: center;">
-                <div style="display: inline-flex; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 20px; margin-bottom: 1.5rem;">
-                    <i data-lucide="sparkles" style="color: var(--accent-purple);"></i>
+                <!-- Logo Centralizado -->
+                <div class="logo-hero">
+                    <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs">
                 </div>
+
                 <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1.5rem; font-weight: 800; line-height: 1.1;">
                     O Teu Próximo <span style="color: var(--accent-blue);">Plano</span> Começa Aqui
                 </h1>
@@ -105,8 +109,23 @@
             <a href="terms.html">Termos de Serviços</a>
             <a href="about.html">Sobre</a>
             <a href="privacy.html">Privacidade</a>
+            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
         </div>
-        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script src="assets/js/main.js"></script>

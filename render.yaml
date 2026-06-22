@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: eureka-labs-backend
+    env: php
+    plan: free
+    buildCommand: ""
+    startCommand: "php -S 0.0.0.0:$PORT"
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UNSPLASH_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: "https://anonymousdeveloper2025.github.io"

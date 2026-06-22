@@ -349,6 +349,38 @@ footer {
 
 .footer-links a:hover { color: white; }
 
+/* Form Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: var(--transition);
+    margin-bottom: 1rem;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
 /* Ad Containers */
 .ad-container {
     background: rgba(255, 255, 255, 0.02);
@@ -360,6 +392,23 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Logo Centralizado */
+.logo-hero {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.logo-hero img {
+    height: 120px;
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
 
 /* Responsive */

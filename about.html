@@ -3,79 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre - Eureka Labs Idefy</title>
+    <title>Sobre | Eureka Labs</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Idefy</span>
+        <a href="index.html" class="logo-container">
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Eureka Labs</span>
+        </a>
+        <div class="menu-btn" id="menuToggle">
+            <i data-lucide="menu"></i>
         </div>
-        <div class="menu-btn">☰</div>
     </header>
 
-    <div class="overlay"></div>
+    <div class="overlay" id="overlay"></div>
 
-    <nav class="side-menu">
-        <div class="close-menu">✕</div>
+    <nav class="side-menu" id="sideMenu">
+        <div class="close-menu" id="closeMenu">
+            <i data-lucide="x"></i>
+        </div>
         <ul class="menu-links">
-            <li><a href="index.html">🏠 Início</a></li>
-            <li><a href="inventory.html">📦 Inventário</a></li>
-            <li><a href="categories.html">🎯 Categorias</a></li>
-            <li><a href="profile.html">👤 Perfil</a></li>
-            <li><a href="about.html">ℹ️ Sobre</a></li>
-            <li><a href="javascript:logout()">🚪 Sair</a></li>
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
         </ul>
     </nav>
 
     <main>
-        <div class="container fade-in" style="max-width: 800px;">
+        <div class="container fade-in">
             <div class="card">
-                <h1 style="text-align: center; margin-bottom: 2rem;">ℹ️ Sobre o Eureka Labs - Idefy</h1>
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center;">Sobre o Eureka Labs</h1>
+                <p style="font-size: 1.1rem; color: var(--text-muted); text-align: center; max-width: 700px; margin: 0 auto 3rem auto;">
+                    Somos uma equipa de desenvolvedores apaixonados por tecnologia e inovação. O Eureka Labs nasceu da ideia de transformar o tempo livre em experiências memoráveis através da Inteligência Artificial.
+                </p>
 
-                <div style="background: #1f2937; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
-                    <h2 style="color: #8b5cf6; margin-bottom: 1rem;">🎯 A Nossa Missão</h2>
-                    <p style="line-height: 1.8; color: #d1d5db; margin-bottom: 1.5rem;">
-                        O Eureka Labs - Idefy foi criado com uma missão simples mas poderosa: <strong>transformar o tédio das férias em oportunidades incríveis de crescimento pessoal e diversão.</strong>
-                    </p>
-                    <p style="line-height: 1.8; color: #d1d5db;">
-                        Sabemos que muitas vezes acordamos durante as férias sem saber o que fazer. Em vez de perder tempo precioso, o Idefy utiliza Inteligência Artificial para gerar ideias personalizadas baseadas nas tuas preferências, interesses e disponibilidade.
-                    </p>
+                <div style="margin-top: 4rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 3rem; text-align: center;">A Nossa Equipa</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Dev 1 -->
+                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); transition: var(--transition);" onmouseover="this.style.borderColor='var(--accent-purple)'; this.style.boxShadow='0 0 20px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
+                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-radius: 50%; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">André Hïmï</h3>
+                            <p style="color: var(--accent-blue); font-weight: 600; margin-bottom: 1rem;">Full Stack Developer</p>
+                            <p style="color: var(--text-muted); line-height: 1.6;">
+                                Especialista em desenvolvimento web e mobile. André traz criatividade e expertise técnica para transformar ideias em realidade. Apaixonado por criar experiências digitais intuitivas e impactantes.
+                            </p>
+                            <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px;">
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
+                                    <i class="fab fa-github fa-lg"></i>
+                                </a>
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
+                                    <i class="fab fa-linkedin fa-lg"></i>
+                                </a>
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
+                                    <i class="fab fa-twitter fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Dev 2 -->
+                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); transition: var(--transition);" onmouseover="this.style.borderColor='var(--accent-purple)'; this.style.boxShadow='0 0 20px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
+                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); border-radius: 50%; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Anderson Muanza</h3>
+                            <p style="color: var(--accent-purple); font-weight: 600; margin-bottom: 1rem;">Backend & DevOps Engineer</p>
+                            <p style="color: var(--text-muted); line-height: 1.6;">
+                                Especialista em arquitetura de sistemas e infraestrutura em nuvem. Anderson garante que o Eureka Labs funciona de forma robusta e escalável. Visionário na otimização de processos e performance.
+                            </p>
+                            <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px;">
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
+                                    <i class="fab fa-github fa-lg"></i>
+                                </a>
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
+                                    <i class="fab fa-linkedin fa-lg"></i>
+                                </a>
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
+                                    <i class="fab fa-twitter fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="background: #1f2937; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
-                    <h2 style="color: #3b82f6; margin-bottom: 1rem;">✨ O Que Nos Torna Especiais</h2>
-                    <ul style="list-style: none; color: #d1d5db;">
-                        <li style="margin-bottom: 1rem;">✅ <strong>IA Inteligente:</strong> Utilizamos tecnologia de ponta para gerar ideias únicas e personalizadas</li>
-                        <li style="margin-bottom: 1rem;">✅ <strong>Múltiplas Categorias:</strong> De vida pessoal a empreendedorismo, temos algo para todos</li>
-                        <li style="margin-bottom: 1rem;">✅ <strong>PDFs Profissionais:</strong> Descarrega os teus planos em formato PDF com imagens</li>
-                        <li style="margin-bottom: 1rem;">✅ <strong>Inventário Pessoal:</strong> Guarda todas as tuas ideias num único lugar</li>
-                        <li style="margin-bottom: 1rem;">✅ <strong>Totalmente Grátis:</strong> Acesso completo a ideias em texto, com opção de PDF premium</li>
-                    </ul>
-                </div>
-
-                <div style="background: #1f2937; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
-                    <h2 style="color: #8b5cf6; margin-bottom: 1rem;">👨‍💻 Desenvolvido Por</h2>
-                    <p style="font-size: 1.3rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">
-                        ∀𝓷𝓸𝓷𝔂𝓶𝓸𝓾𝓼 🎭 𝓓𝓮𝓿𝓮𝓵𝓸𝓹𝓮𝓻
-                    </p>
-                    <p style="color: #9ca3af;">
-                        Um desenvolvedor apaixonado por criar soluções inovadoras que melhoram a vida das pessoas. Acreditamos que a tecnologia deve ser acessível, intuitiva e impactante.
-                    </p>
-                </div>
-
-                <div style="background: #1f2937; padding: 2rem; border-radius: 10px;">
-                    <h2 style="color: #3b82f6; margin-bottom: 1rem;">📞 Contacta-nos</h2>
-                    <p style="color: #d1d5db; margin-bottom: 1rem;">
-                        Tens sugestões, feedback ou encontraste um bug? Adoraríamos ouvir de ti!
-                    </p>
-                    <p style="color: #9ca3af;">
-                        📧 Email: <strong>support@eurekalabs.com</strong><br>
-                        🐦 Twitter: <strong>@EurekaLabsIdify</strong><br>
-                        💬 Discord: <strong>Comunidade Idefy</strong>
-                    </p>
+                <div style="margin-top: 4rem; padding-top: 3rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">A Nossa Missão</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                        <div style="padding: 1.5rem;">
+                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3 style="margin-bottom: 0.5rem;">Inspiração</h3>
+                            <p style="color: var(--text-muted);">Transformar o tempo livre em oportunidades de crescimento e diversão.</p>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="font-size: 2rem; color: var(--accent-purple); margin-bottom: 1rem;">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3 style="margin-bottom: 0.5rem;">Inovação</h3>
+                            <p style="color: var(--text-muted);">Utilizar IA avançada para gerar ideias criativas e personalizadas.</p>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h3 style="margin-bottom: 0.5rem;">Impacto</h3>
+                            <p style="color: var(--text-muted);">Criar valor real nas vidas dos nossos utilizadores.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,12 +129,31 @@
     <footer>
         <div class="footer-separator"></div>
         <div class="footer-links">
-            <a href="terms.html">📋 Termos de Serviços</a>
-            <a href="about.html">ℹ️ Sobre</a>
+            <a href="terms.html">Termos de Serviços</a>
+            <a href="about.html">Sobre</a>
+            <a href="privacy.html">Privacidade</a>
+            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
         </div>
-        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script src="assets/js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
