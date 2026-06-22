@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tua Ideia - Eureka Labs Idefy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Idefy</span>
+        </div>
+        <div class="menu-btn">☰</div>
+    </header>
+
+    <div class="overlay"></div>
+
+    <nav class="side-menu">
+        <div class="close-menu">✕</div>
+        <ul class="menu-links">
+            <li><a href="index.html">🏠 Início</a></li>
+            <li><a href="inventory.html">📦 Inventário</a></li>
+            <li><a href="categories.html">🎯 Categorias</a></li>
+            <li><a href="profile.html">👤 Perfil</a></li>
+            <li><a href="about.html">ℹ️ Sobre</a></li>
+            <li><a href="javascript:logout()">🚪 Sair</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container fade-in" style="max-width: 700px;">
+            <div class="card">
+                <h1 style="text-align: center; margin-bottom: 2rem;">💡 Tua Ideia Gerada!</h1>
+
+                <div class="result-box">
+                    <h2 id="ideaTitle">Carregando...</h2>
+                    <div id="ideaContent" class="result-content" style="margin-top: 1rem;">
+                        Gerando a tua ideia com IA...
+                    </div>
+                </div>
+
+                <div class="ad-container" id="ad-banner-result">
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    <!-- Banner Publicitário -->
+                    <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-xxxxxxxxxxxxxxxx" data-ad-slot="xxxxxxxx"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="saveToInventory()">
+                        💾 Guardar no Inventário
+                    </button>
+                    <button class="btn btn-outline" onclick="generatePDF()">
+                        📄 Gerar PDF
+                    </button>
+                    <button class="btn btn-outline" onclick="window.location.href='categories.html'">
+                        🔄 Nova Ideia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-separator"></div>
+        <div class="footer-links">
+            <a href="terms.html">📋 Termos de Serviços</a>
+            <a href="about.html">ℹ️ Sobre</a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+    </footer>
+
+    <script>
+        let generatedIdea = null;
+
+        function displayIdea() {
+            const ideaData = sessionStorage.getItem('generated_idea');
+            
+            if (!ideaData) {
+                document.getElementById('ideaContent').textContent = 'Erro: Nenhuma ideia foi gerada';
+                return;
+            }
+
+            generatedIdea = JSON.parse(ideaData);
+            document.getElementById('ideaTitle').textContent = generatedIdea.title || 'Tua Ideia';
+            document.getElementById('ideaContent').textContent = generatedIdea.content || 'Conteúdo não disponível';
+        }
+
+        async function saveToInventory() {
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            
+            if (!user) {
+                alert('Erro: Utilizador não autenticado');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://YOUR_BACKEND_URL/api/save-idea.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        idea: generatedIdea
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Ideia guardada com sucesso!');
+                } else {
+                    alert(data.message || 'Erro ao guardar ideia');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor');
+            }
+        }
+
+        async function generatePDF() {
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            
+            if (!user) {
+                alert('Erro: Utilizador não autenticado');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://YOUR_BACKEND_URL/api/generate-pdf.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        idea: generatedIdea
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ideia-${Date.now()}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('Erro ao gerar PDF');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor');
+            }
+        }
+
+        displayIdea();
+    </script>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

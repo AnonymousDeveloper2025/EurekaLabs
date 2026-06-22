@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Eureka Labs Idefy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Idefy</span>
+        </div>
+    </header>
+
+    <main style="justify-content: center;">
+        <div class="container" style="max-width: 400px;">
+            <div class="card fade-in">
+                <h1 style="text-align: center; margin-bottom: 2rem;">🔐 Entrar</h1>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>📧 Email</label>
+                        <input type="email" id="email" required placeholder="teu@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔑 Palavra-passe</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        Entrar
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(139, 92, 246, 0.2);">
+                    <p style="color: #9ca3af;">Sem conta? <a href="register.html" style="color: #8b5cf6; text-decoration: none; font-weight: 600;">Registar-se</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-separator"></div>
+        <div class="footer-links">
+            <a href="terms.html">📋 Termos de Serviços</a>
+            <a href="about.html">ℹ️ Sobre</a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+    </footer>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://YOUR_BACKEND_URL/api/auth/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('idefy_user', JSON.stringify(data.user));
+                    document.cookie = `idefy_token=${data.token}; path=/`;
+                    window.location.href = 'categories.html';
+                } else {
+                    alert(data.message || 'Erro ao fazer login');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor');
+            }
+        });
+    </script>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

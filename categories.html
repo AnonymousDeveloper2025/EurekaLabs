@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias | Eureka Labs</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Eureka Labs</span>
+        </a>
+        <div class="menu-btn" id="menuToggle">
+            <i data-lucide="menu"></i>
+        </div>
+    </header>
+
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="close-menu" id="closeMenu">
+            <i data-lucide="x"></i>
+        </div>
+        <ul class="menu-links">
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container fade-in">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">O que procuras hoje?</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">Escolhe um caminho e deixa a nossa IA guiar-te.</p>
+            </div>
+
+            <div class="categories-grid">
+                <!-- Vida Pessoal -->
+                <div class="category-card" onclick="selectCategory('vida-pessoal')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="heart"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Vida Pessoal</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Reflexão, hábitos e bem-estar.</p>
+                    </div>
+                </div>
+
+                <!-- Aventura -->
+                <div class="category-card" onclick="selectCategory('aventura')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="mountain"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Aventura</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Exploração, natureza e adrenalina.</p>
+                    </div>
+                </div>
+
+                <!-- Futuro -->
+                <div class="category-card" onclick="selectCategory('futuro')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="rocket"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Futuro</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Metas, carreira e visão de longo prazo.</p>
+                    </div>
+                </div>
+
+                <!-- Escola -->
+                <div class="category-card" onclick="selectCategory('escola')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1427504494785-cdaeb5ebaf00?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="graduation-cap"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Escola & Estudo</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Revisões, novas skills e foco acadêmico.</p>
+                    </div>
+                </div>
+
+                <!-- Criatividade -->
+                <div class="category-card" onclick="selectCategory('criatividade')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="palette"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Criatividade</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Arte, música, escrita e design.</p>
+                    </div>
+                </div>
+
+                <!-- Empreendedorismo -->
+                <div class="category-card" onclick="selectCategory('empreendedorismo')">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" class="category-img">
+                        <div class="category-icon-overlay"><i data-lucide="briefcase"></i></div>
+                    </div>
+                    <div class="category-info">
+                        <h3>Negócios</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Validar ideias e criar o teu micro-saas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-separator"></div>
+        <div class="footer-links">
+            <a href="terms.html">Termos de Serviços</a>
+            <a href="about.html">Sobre</a>
+            <a href="privacy.html">Privacidade</a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        function selectCategory(cat) {
+            sessionStorage.setItem('selected_category', cat);
+            window.location.href = 'questions.html';
+        }
+        lucide.createIcons();
+    </script>
+</body>
+</html>

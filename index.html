@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eureka Labs - Idefy | Gerador de Ideias para as Férias</title>
+    <title>Eureka Labs | Gerador Inteligente de Ideias</title>
 
     <!-- Meta tags WhatsApp/Facebook/Discord -->
-    <meta property="og:title" content="Eureka Labs - Idefy" />
+    <meta property="og:title" content="Eureka Labs" />
     <meta property="og:description" content="Não sabes o que fazer nas férias? Deixa-nos gerar ideias incríveis para ti!" />
     <meta property="og:image" content="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" />
     <meta property="og:url" content="https://anonymousdeveloper2025.github.io/EurekaLabs/" />
@@ -15,70 +15,84 @@
     
     <!-- Twitter/X -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Eureka Labs - Idefy">
+    <meta name="twitter:title" content="Eureka Labs">
     <meta name="twitter:description" content="Não sabes o que fazer nas férias? Deixa-nos gerar ideias incríveis para ti!">
     <meta name="twitter:image" content="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png">
 
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Idefy</span>
+        <a href="index.html" class="logo-container">
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Eureka Labs</span>
+        </a>
+        <div class="menu-btn" id="menuToggle">
+            <i data-lucide="menu"></i>
         </div>
-        <div class="menu-btn">☰</div>
     </header>
 
-    <div class="overlay"></div>
+    <div class="overlay" id="overlay"></div>
 
-    <nav class="side-menu">
-        <div class="close-menu">✕</div>
+    <nav class="side-menu" id="sideMenu">
+        <div class="close-menu" id="closeMenu">
+            <i data-lucide="x"></i>
+        </div>
         <ul class="menu-links">
-            <li><a href="index.html">🏠 Início</a></li>
-            <li><a href="inventory.html">📦 Inventário</a></li>
-            <li><a href="categories.html">🎯 Categorias</a></li>
-            <li><a href="profile.html">👤 Perfil</a></li>
-            <li><a href="about.html">ℹ️ Sobre</a></li>
-            <li><a href="javascript:logout()">🚪 Sair</a></li>
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
         </ul>
     </nav>
 
     <main>
         <div class="container fade-in">
             <div class="card" style="text-align: center;">
-                <h1 style="font-size: 3rem; margin-bottom: 1rem;">🎯 Bem-vindo ao Idefy</h1>
-                <p style="font-size: 1.2rem; color: #9ca3af; margin-bottom: 2rem;">
-                    Não sabes o que fazer nas férias? Deixa-nos gerar ideias incríveis para ti!
+                <div style="display: inline-flex; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 20px; margin-bottom: 1.5rem;">
+                    <i data-lucide="sparkles" style="color: var(--accent-purple);"></i>
+                </div>
+                <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1.5rem; font-weight: 800; line-height: 1.1;">
+                    O Teu Próximo <span style="color: var(--accent-blue);">Plano</span> Começa Aqui
+                </h1>
+                <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem auto;">
+                    Transformamos o teu tempo livre em experiências memoráveis com o poder da Inteligência Artificial.
                 </p>
 
                 <div class="ad-container" id="ad-banner-1">
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                    <!-- Banner Publicitário -->
-                    <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-xxxxxxxxxxxxxxxx" data-ad-slot="xxxxxxxx"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                    <!-- AdsTerra Placeholder -->
+                    <div style="opacity: 0.5; font-size: 0.8rem;">Espaço Publicitário AdsTerra</div>
                 </div>
 
-                <a href="categories.html" class="btn btn-primary" style="font-size: 1.2rem; padding: 1rem 2rem;">
-                    💡 Começar a Gerar Ideias
-                </a>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="categories.html" class="btn btn-primary">
+                        <i data-lucide="zap"></i> Criar Novo Plano
+                    </a>
+                    <a href="about.html" class="btn btn-outline">
+                        Saber Mais
+                    </a>
+                </div>
 
-                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(139, 92, 246, 0.2);">
-                    <h2 style="margin-bottom: 1.5rem;">✨ Como Funciona?</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                        <div style="background: #1f2937; padding: 1.5rem; border-radius: 10px;">
-                            <h3 style="color: #3b82f6; margin-bottom: 0.5rem;">1️⃣ Escolhe uma Categoria</h3>
-                            <p style="color: #9ca3af;">Seleciona a área que te interessa: Vida Pessoal, Aventura, Criatividade...</p>
-                        </div>
-                        <div style="background: #1f2937; padding: 1.5rem; border-radius: 10px;">
-                            <h3 style="color: #8b5cf6; margin-bottom: 0.5rem;">2️⃣ Responde Perguntas</h3>
-                            <p style="color: #9ca3af;">Responde a algumas perguntas rápidas sobre as tuas preferências.</p>
-                        </div>
-                        <div style="background: #1f2937; padding: 1.5rem; border-radius: 10px;">
-                            <h3 style="color: #3b82f6; margin-bottom: 0.5rem;">3️⃣ Recebe a Ideia</h3>
-                            <p style="color: #9ca3af;">Obtém um plano detalhado e pronto para executar!</p>
-                        </div>
+                <div style="margin-top: 4rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
+                        <i data-lucide="brain-circuit" style="color: var(--accent-purple); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">IA Criativa</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Algoritmos avançados que pensam fora da caixa.</p>
+                    </div>
+                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
+                        <i data-lucide="file-text" style="color: var(--accent-blue); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">PDF Export</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Leva os teus planos contigo em formato profissional.</p>
+                    </div>
+                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
+                        <i data-lucide="shield-check" style="color: var(--accent-purple); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">Seguro</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Os teus dados e inventário protegidos.</p>
                     </div>
                 </div>
             </div>
@@ -88,12 +102,16 @@
     <footer>
         <div class="footer-separator"></div>
         <div class="footer-links">
-            <a href="terms.html">📋 Termos de Serviços</a>
-            <a href="about.html">ℹ️ Sobre</a>
+            <a href="terms.html">Termos de Serviços</a>
+            <a href="about.html">Sobre</a>
+            <a href="privacy.html">Privacidade</a>
         </div>
         <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script src="assets/js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

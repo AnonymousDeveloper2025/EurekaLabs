@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalizar Plano | Eureka Labs</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Eureka Labs</span>
+        </a>
+        <div class="menu-btn" id="menuToggle">
+            <i data-lucide="menu"></i>
+        </div>
+    </header>
+
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="close-menu" id="closeMenu">
+            <i data-lucide="x"></i>
+        </div>
+        <ul class="menu-links">
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container fade-in" style="max-width: 650px;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 id="questionStep" style="font-size: 1rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1px;">Passo 1 de 5</h2>
+                    <div id="categoryBadge" style="padding: 4px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 20px; font-size: 0.8rem; color: var(--accent-blue);">Categoria</div>
+                </div>
+
+                <div class="progress-container" style="margin-bottom: 3rem;">
+                    <div class="progress-bar" id="progressBar" style="width: 20%;"></div>
+                </div>
+
+                <div id="questionWrapper" class="question-box">
+                    <h1 id="questionTitle" style="font-size: 1.5rem; margin-bottom: 2rem;">Carregando pergunta...</h1>
+                    <div id="optionsList"></div>
+                </div>
+
+                <div class="ad-container">
+                    <div style="opacity: 0.5; font-size: 0.8rem;">Anúncio AdsTerra</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden;">
+                        <i data-lucide="arrow-left"></i> Voltar
+                    </button>
+                    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()">
+                        Próximo <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        const questionData = {
+            'vida-pessoal': [
+                { q: 'Qual é o teu objetivo principal para estas férias?', options: ['Descanso total', 'Crescimento pessoal', 'Novos hábitos', 'Organização de vida'] },
+                { q: 'Quanto tempo pretendes dedicar diariamente?', options: ['30 min', '1-2 horas', 'Metade do dia', 'Tempo livre total'] },
+                { q: 'Preferes atividades...', options: ['Solitárias e reflexivas', 'Sociais e interativas', 'Mistas'] },
+                { q: 'Qual é o teu nível de motivação atual?', options: ['Preciso de um empurrão', 'Moderado', 'Muito motivado'] },
+                { q: 'Tens algum orçamento para investir em ti?', options: ['Zero', 'Pequeno (Kumbuzinho)', 'Moderado', 'Sem limites'] }
+            ],
+            'aventura': [
+                { q: 'Que tipo de ambiente preferes?', options: ['Praia/Mar', 'Montanha/Natureza', 'Cidade/Urbano', 'Deserto/Inexplorado'] },
+                { q: 'Qual é o teu nível de adrenalina desejado?', options: ['Relaxado', 'Moderado', 'Radical', 'Extremo'] },
+                { q: 'Como pretendes deslocar-te?', options: ['Carro próprio', 'Transportes públicos', 'Caminhada/Bicicleta', 'Aluguer'] },
+                { q: 'Qual é a duração ideal da aventura?', options: ['Um dia (Bate-volta)', 'Fim de semana', 'Uma semana', 'Mais de uma semana'] },
+                { q: 'Vais com companhia?', options: ['Sozinho(a)', 'Parceiro(a)', 'Grupo de amigos', 'Família'] }
+            ]
+            // Outras categorias seriam expandidas aqui...
+        };
+
+        let currentStep = 0;
+        let userAnswers = [];
+        const category = sessionStorage.getItem('selected_category') || 'vida-pessoal';
+        const questions = questionData[category] || questionData['vida-pessoal'];
+
+        function init() {
+            document.getElementById('categoryBadge').textContent = category.replace('-', ' ').toUpperCase();
+            renderQuestion();
+            lucide.createIcons();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentStep];
+            document.getElementById('questionStep').textContent = `Passo ${currentStep + 1} de ${questions.length}`;
+            document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
+            document.getElementById('questionTitle').textContent = q.q;
+
+            const list = document.getElementById('optionsList');
+            list.innerHTML = '';
+            
+            q.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = `option-label ${userAnswers[currentStep] === opt ? 'selected' : ''}`;
+                div.innerHTML = `<span>${opt}</span>`;
+                div.onclick = () => selectOption(opt);
+                list.appendChild(div);
+            });
+
+            document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
+            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Plano <i data-lucide="sparkles"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
+            lucide.createIcons();
+        }
+
+        function selectOption(opt) {
+            userAnswers[currentStep] = opt;
+            renderQuestion();
+        }
+
+        function handleNext() {
+            if (!userAnswers[currentStep]) {
+                alert('Por favor, seleciona uma opção para continuar.');
+                return;
+            }
+
+            if (currentStep < questions.length - 1) {
+                currentStep++;
+                renderQuestion();
+            } else {
+                startGeneration();
+            }
+        }
+
+        function handlePrev() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderQuestion();
+            }
+        }
+
+        async function startGeneration() {
+            const card = document.querySelector('.card');
+            card.innerHTML = `
+                <div style="text-align: center; padding: 4rem 2rem;">
+                    <div class="loader-spinner" style="width: 60px; height: 60px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-purple); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 2rem auto;"></div>
+                    <h2 style="margin-bottom: 1rem;">A processar a tua Eureka...</h2>
+                    <p style="color: var(--text-muted);">A nossa IA está a criar o plano perfeito para ti.</p>
+                    <div class="ad-container" style="margin-top: 3rem;">
+                        <div style="opacity: 0.5; font-size: 0.8rem;">Anúncio AdsTerra - Visível durante o processamento</div>
+                    </div>
+                </div>
+            `;
+
+            // Estilo do spinner via JS para simplificar
+            const style = document.createElement('style');
+            style.innerHTML = "@keyframes spin { to { transform: rotate(360deg); } }";
+            document.head.appendChild(style);
+
+            // Simulação de chamada API (será substituída pela real no backend)
+            setTimeout(() => {
+                window.location.href = 'result.html';
+            }, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

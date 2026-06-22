@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário - Eureka Labs Idefy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
+            <span class="logo-text">Idefy</span>
+        </div>
+        <div class="menu-btn">☰</div>
+    </header>
+
+    <div class="overlay"></div>
+
+    <nav class="side-menu">
+        <div class="close-menu">✕</div>
+        <ul class="menu-links">
+            <li><a href="index.html">🏠 Início</a></li>
+            <li><a href="inventory.html">📦 Inventário</a></li>
+            <li><a href="categories.html">🎯 Categorias</a></li>
+            <li><a href="profile.html">👤 Perfil</a></li>
+            <li><a href="about.html">ℹ️ Sobre</a></li>
+            <li><a href="javascript:logout()">🚪 Sair</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container fade-in">
+            <h1 style="text-align: center; margin-bottom: 1rem;">📦 Meu Inventário</h1>
+            <p style="text-align: center; color: #9ca3af; margin-bottom: 2rem;">Aqui estão todas as ideias que guardaste</p>
+
+            <div class="ad-container" id="ad-banner-inventory">
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- Banner Publicitário -->
+                <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-xxxxxxxxxxxxxxxx" data-ad-slot="xxxxxxxx"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+
+            <div id="inventoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                <div style="text-align: center; grid-column: 1 / -1;">
+                    <p style="color: #9ca3af;">Carregando ideias...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-separator"></div>
+        <div class="footer-links">
+            <a href="terms.html">📋 Termos de Serviços</a>
+            <a href="about.html">ℹ️ Sobre</a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+    </footer>
+
+    <script>
+        async function loadInventory() {
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://YOUR_BACKEND_URL/api/get-inventory.php?userId=' + user.id);
+                const data = await response.json();
+
+                if (data.success && data.ideas.length > 0) {
+                    let html = '';
+                    data.ideas.forEach(idea => {
+                        html += `
+                            <div class="card" style="padding: 1.5rem;">
+                                <h3 style="margin-bottom: 0.5rem;">${idea.title}</h3>
+                                <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 1rem;">📅 ${new Date(idea.created_at).toLocaleDateString('pt-PT')}</p>
+                                <p style="color: #9ca3af; margin-bottom: 1rem; line-height: 1.4;">${idea.content.substring(0, 100)}...</p>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-outline" onclick="viewIdea('${idea.id}')" style="flex: 1; font-size: 0.9rem;">👁️ Ver</button>
+                                    <button class="btn btn-outline" onclick="downloadPDF('${idea.id}')" style="flex: 1; font-size: 0.9rem;">📄 PDF</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('inventoryList').innerHTML = html;
+                } else {
+                    document.getElementById('inventoryList').innerHTML = `
+                        <div style="text-align: center; grid-column: 1 / -1;">
+                            <p style="color: #9ca3af; font-size: 1.1rem;">Ainda não tens ideias guardadas 📭</p>
+                            <a href="categories.html" class="btn btn-primary" style="margin-top: 1rem;">Gerar uma Ideia</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('inventoryList').innerHTML = '<p style="color: red;">Erro ao carregar inventário</p>';
+            }
+        }
+
+        function viewIdea(ideaId) {
+            alert('Ver ideia: ' + ideaId);
+            // Implementar visualização detalhada
+        }
+
+        async function downloadPDF(ideaId) {
+            try {
+                const response = await fetch('http://YOUR_BACKEND_URL/api/download-pdf.php?ideaId=' + ideaId);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ideia-${ideaId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao descarregar PDF');
+            }
+        }
+
+        loadInventory();
+    </script>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
