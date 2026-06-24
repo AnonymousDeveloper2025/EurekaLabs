@@ -42,14 +42,19 @@ function jsonResponse($success, $message = '', $data = []) {
     ]);
 }
 
-// Conexão à base de dados
+// Conexão à base de dados (PostgreSQL via PDO)
 function getDBConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($conn->connect_error) {
-        die(json_encode(['success' => false, 'message' => 'Erro na conexão com a BD']));
+    try {
+        $dsn = "pgsql:host=" . DB_HOST . ";port=5432;dbname=" . DB_NAME;
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        return $pdo;
+    } catch (PDOException $e) {
+        die(json_encode(['success' => false, 'message' => 'Erro na conexão com a BD: ' . $e->getMessage()]));
     }
-    $conn->set_charset("utf8mb4");
-    return $conn;
 }
 
 // API Gemini Call
