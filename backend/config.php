@@ -10,7 +10,7 @@ define('DB_PASS', getenv('DB_PASS') ?: 'password');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
 // API Gemini
-define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: 'YOUR_GEMINI_API_KEY_HERE');
+define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
 define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
 
 // Unsplash
@@ -24,7 +24,7 @@ define('FRONTEND_URL', getenv('FRONTEND_URL') ?: 'https://anonymousdeveloper2025
 define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your_super_secret_key_change_this');
 
 // Headers CORS dinâmicos
-header('Access-Control-Allow-Origin: ' . FRONTEND_URL);
+header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
