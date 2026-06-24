@@ -50,3 +50,6 @@ window.logout = () => {
         window.location.href = 'login.html';
     }
 };
+
+// Configuração da API
+const API_BASE_URL = 'https://eureka-labs-backend.onrender.com';
