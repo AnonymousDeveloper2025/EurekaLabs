@@ -45,7 +45,7 @@ function jsonResponse($success, $message = '', $data = []) {
 // Conexão à base de dados (PostgreSQL via PDO)
 function getDBConnection() {
     try {
-        $dsn = "pgsql:host=" . DB_HOST . ";port=5432;dbname=" . DB_NAME;
+        $dsn = "pgsql:host='" . DB_HOST . "';port=5432;dbname='" . DB_NAME . "'";
         $pdo = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
