@@ -165,10 +165,32 @@
             style.innerHTML = "@keyframes spin { to { transform: rotate(360deg); } }";
             document.head.appendChild(style);
 
-            // Simulação de chamada API (será substituída pela real no backend)
-            setTimeout(() => {
-                window.location.href = 'result.html';
-            }, 3000);
+            try {
+                const user = JSON.parse(localStorage.getItem('idefy_user'));
+                const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        category: category,
+                        answers: userAnswers,
+                        user_id: user.id
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
+                    window.location.href = 'result.html';
+                } else {
+                    alert(data.message || 'Erro ao gerar ideia');
+                    window.location.href = 'categories.html';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor de IA');
+                window.location.href = 'categories.html';
+            }
         }
 
         init();
