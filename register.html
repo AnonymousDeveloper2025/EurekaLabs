@@ -77,7 +77,7 @@
             }
 
             try {
-                const response = await fetch('http://YOUR_BACKEND_URL/api/auth/register.php', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/register.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
