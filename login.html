@@ -56,6 +56,11 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader-spinner" style="width: 20px; height: 20px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto;"></div>';
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
@@ -66,18 +71,23 @@
                     body: JSON.stringify({ email, password })
                 });
 
+                if (!response.ok) throw new Error('Servidor indisponível');
+
                 const data = await response.json();
 
                 if (data.success) {
                     localStorage.setItem('idefy_user', JSON.stringify(data.user));
-                    document.cookie = `idefy_token=${data.token}; path=/`;
+                    document.cookie = `idefy_token=${data.token}; path=/; max-age=31536000`;
                     window.location.href = 'categories.html';
                 } else {
-                    alert(data.message || 'Erro ao fazer login');
+                    alert('❌ ' + (data.message || 'Erro ao fazer login'));
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor');
+                alert('⚠️ Erro ao conectar com o servidor. O Render pode estar a iniciar, tenta novamente em 30 segundos.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         });
     </script>
