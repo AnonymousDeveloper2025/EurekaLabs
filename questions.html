@@ -9,6 +9,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div id="particles-js"></div>
+    <div class="loader-container" id="globalLoader">
+        <div class="loader-content">
+            <div class="loader-text">Eureka Labs</div>
+            <svg class="loader-svg" viewBox="0 0 24 24">
+                <path d="M9 21h6M12 17v4M12 3c-4.97 0-9 4.03-9 9 0 2.4 1 4.5 2.6 6H18.4c1.6-1.5 2.6-3.6 2.6-6 0-4.97-4.03-9-9-9z"/>
+            </svg>
+        </div>
+    </div>
     <header>
         <a href="index.html" class="logo-container">
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
@@ -148,22 +157,8 @@
         }
 
         async function startGeneration() {
-            const card = document.querySelector('.card');
-            card.innerHTML = `
-                <div style="text-align: center; padding: 4rem 2rem;">
-                    <div class="loader-spinner" style="width: 60px; height: 60px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-purple); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 2rem auto;"></div>
-                    <h2 style="margin-bottom: 1rem;">A processar a tua Eureka...</h2>
-                    <p style="color: var(--text-muted);">A nossa IA está a criar o plano perfeito para ti.</p>
-                    <div class="ad-container" style="margin-top: 3rem;">
-                        <div style="opacity: 0.5; font-size: 0.8rem;">Anúncio AdsTerra - Visível durante o processamento</div>
-                    </div>
-                </div>
-            `;
-
-            // Estilo do spinner via JS para simplificar
-            const style = document.createElement('style');
-            style.innerHTML = "@keyframes spin { to { transform: rotate(360deg); } }";
-            document.head.appendChild(style);
+            const loader = document.getElementById('globalLoader');
+            loader.style.display = 'flex';
 
             try {
                 const user = JSON.parse(localStorage.getItem('idefy_user'));

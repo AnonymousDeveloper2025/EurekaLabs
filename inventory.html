@@ -10,7 +10,7 @@
 <body>
     <header>
         <div class="logo-container">
-            <img src="assets/img/logo.png" alt="Eureka Labs Logo">
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Idefy</span>
         </div>
         <div class="menu-btn">☰</div>
@@ -50,13 +50,29 @@
         </div>
     </main>
 
-    <footer>
+        <footer>
         <div class="footer-separator"></div>
         <div class="footer-links">
-            <a href="terms.html">📋 Termos de Serviços</a>
-            <a href="about.html">ℹ️ Sobre</a>
+            <a href="terms.html">Termos de Serviços</a>
+            <a href="about.html">Sobre</a>
+            <a href="privacy.html">Privacidade</a>
+            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
         </div>
-        <p style="color: #4b5563; font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script>
@@ -69,7 +85,7 @@
             }
 
             try {
-                const response = await fetch('http://YOUR_BACKEND_URL/api/get-inventory.php?userId=' + user.id);
+                const response = await fetch('https://eureka-labs-backend.onrender.com/api/get-inventory.php?userId=' + user.id);
                 const data = await response.json();
 
                 if (data.success && data.ideas.length > 0) {
@@ -109,7 +125,7 @@
 
         async function downloadPDF(ideaId) {
             try {
-                const response = await fetch('http://YOUR_BACKEND_URL/api/download-pdf.php?ideaId=' + ideaId);
+                const response = await fetch('https://eureka-labs-backend.onrender.com/api/download-pdf.php?ideaId=' + ideaId);
                 
                 if (response.ok) {
                     const blob = await response.blob();
