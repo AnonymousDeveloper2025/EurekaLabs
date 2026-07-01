@@ -17,9 +17,8 @@
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="login.html" class="btn btn-outline" style="padding: 10px 20px; font-size: 0.85rem;">Entrar</a>
-            <a href="register.html" class="btn btn-primary" style="padding: 10px 25px; font-size: 0.85rem;">Começar</a>
+        <div id="menuToggle" class="menu-btn" aria-label="Abrir menu">
+            <i data-lucide="menu"></i>
         </div>
     </header>
 
@@ -29,12 +28,12 @@
                 <h1 id="hero-title" style="font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px;">
                     Em que posso ajudar, <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eureka</span>?
                 </h1>
-                <p style="color: var(--text-dim); font-size: 1.25rem; margin-bottom: 3.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Transformamos o teu tempo livre em experiências memoráveis com o nosso assistente IDEFY.</p>
+                <p style="color: var(--text-dim); font-size: 1.25rem; margin-bottom: 3.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Transformamos o teu tempo livre em experiênc[...]</p>
             </div>
 
             <form id="searchForm" class="pill-input-container">
                 <input type="text" id="topicInput" class="pill-input" placeholder="Peça ao Idefy... (ex: Plano de férias em Portugal)" autocomplete="off">
-                <button type="submit" style="background: var(--accent-blue); border: none; color: white; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth);">
+                <button type="submit" class="btn btn-circle">
                     <i data-lucide="arrow-up" style="width: 20px; height: 20px;"></i>
                 </button>
             </form>
@@ -50,14 +49,14 @@
         </div>
     </main>
 
-    <footer>
+    <footer class="site-footer">
         <div class="footer-links">
             <a href="terms.html">Termos</a>
             <a href="about.html">Sobre</a>
             <a href="privacy.html">Privacidade</a>
             <a href="help.html">Ajuda</a>
         </div>
-        <p style="font-size: 0.85rem; opacity: 0.5;">© 2026 ∀nonymous Developer — Eureka Labs Elite Version</p>
+        <p class="footer-copy">© 2026 ∀nonymous Developer — Eureka Labs Elite Version</p>
     </footer>
 
     <!-- Loader Profissional -->
@@ -106,6 +105,18 @@
             background: rgba(255,255,255,0.08);
             border-color: white;
             color: white;
+        }
+        .btn-circle {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </body>

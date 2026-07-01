@@ -16,7 +16,7 @@
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div id="menuToggle" style="cursor: pointer; color: white; padding: 10px;">
+        <div id="menuToggle" class="menu-btn" aria-label="Abrir menu">
             <i data-lucide="menu"></i>
         </div>
     </header>
@@ -24,12 +24,12 @@
     <div class="overlay" id="overlay"></div>
     <nav class="side-menu" id="sideMenu">
         <div id="closeMenu" style="cursor:pointer; margin-bottom:2.5rem; text-align:right;"><i data-lucide="x"></i></div>
-        <ul style="list-style:none;">
+        <ul style="list-style:none; padding:0;">
             <li style="margin-bottom:1.5rem;"><a href="index.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="home"></i> Início</a></li>
             <li style="margin-bottom:1.5rem;"><a href="inventory.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="package"></i> Inventário</a></li>
             <li style="margin-bottom:1.5rem;"><a href="categories.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="target"></i> Categorias</a></li>
             <li style="margin-bottom:1.5rem;"><a href="profile.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="user"></i> Perfil</a></li>
-            <li style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--glass-border);"><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="log-out"></i> Sair</a></li>
+            <li style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--glass-border);"><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="log-out"></i> Terminar Sessão</a></li>
         </ul>
     </nav>
 
@@ -107,6 +107,16 @@
             </div>
         </div>
     </main>
+
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="terms.html">Termos de Serviços</a>
+            <a href="about.html">Sobre</a>
+            <a href="privacy.html">Privacidade</a>
+            <a href="help.html">Ajuda</a>
+        </div>
+        <p class="footer-copy">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
