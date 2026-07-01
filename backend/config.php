@@ -24,14 +24,23 @@ if ($_SERVER['REQUEST_METHOD']=== 'OPTIONS') {
 
 header('Content-Type: application/json; charset=UTF-8');
 
-// 2. Conexão DB - Render usa variáveis de ambiente
+// 2. Conexão DB - POSTGRES do Render via DATABASE_URL
 function getDBConnection() {
-    $host = $_ENV['DB_HOST']?? 'localhost';
-    $db = $_ENV['DB_NAME']?? 'eureka_db';
-    $user = $_ENV['DB_USER']?? 'root';
-    $pass = $_ENV['DB_PASS']?? '';
+    $databaseUrl = $_ENV['DATABASE_URL']?? ''; // Render cria essa var sozinho
 
-    $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+    if (empty($databaseUrl)) {
+        echo json_encode(['success' => false, 'message' => 'Erro DB: DATABASE_URL não definida no Render']);
+        exit();
+    }
+
+    $db = parse_url($databaseUrl);
+    $host = $db['host'];
+    $port = $db['port']?? 5432;
+    $dbname = ltrim($db['path'], '/');
+    $user = $db['user'];
+    $pass = $db['pass'];
+
+    $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require"; // Obrigatório no Render
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -45,7 +54,7 @@ function getDBConnection() {
     }
 }
 
-// 3. Auth Helpers - Igual ao teu register.php
+// 3. Auth Helpers
 function isValidEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
@@ -55,18 +64,18 @@ function hashPassword($password) {
 }
 
 function generateToken($userId) {
-    return bin2hex(random_bytes(32))."_".$userId; // Simples. Depois troca por JWT
+    return bin2hex(random_bytes(32))."_".$userId;
 }
 
-// 4. Gemini API - MODELO ATUALIZADO: gemini-2.0-flash = Mais rápido e grátis
+// 4. Gemini API - MODELO: gemini-1.5-flash-latest = 1500 requests/dia grátis
 function callGeminiAPI($prompt) {
-    $apiKey = $_ENV['GEMINI_API_KEY']?? ''; // Pega do Render > Environment
+    $apiKey = $_ENV['GEMINI_API_KEY']?? '';
 
     if (empty($apiKey)) {
-        return ['error' => 'GEMINI_API_KEY não definida no Render'];
+        return ['error' => 'GEMINI_API_KEY não definida no Render > Environment'];
     }
 
-    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=". $apiKey;
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=". $apiKey;
 
     $payload = [
         "contents" => [
@@ -83,7 +92,7 @@ function callGeminiAPI($prompt) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    curl_setopt($ch, CURLOPT_TIMEOUT, 45); // 45s pq o Render é lento
+    curl_setopt($ch, CURLOPT_TIMEOUT, 45);
 
     $response = curl_exec($ch);
 
