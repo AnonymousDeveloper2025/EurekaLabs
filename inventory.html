@@ -92,13 +92,13 @@
                     let html = '';
                     data.ideas.forEach(idea => {
                         html += `
-                            <div class="card" style="padding: 1.5rem;">
-                                <h3 style="margin-bottom: 0.5rem;">${idea.title}</h3>
-                                <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 1rem;">📅 ${new Date(idea.created_at).toLocaleDateString('pt-PT')}</p>
-                                <p style="color: #9ca3af; margin-bottom: 1rem; line-height: 1.4;">${idea.content.substring(0, 100)}...</p>
+                            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+                                <div>
+                                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem;">${idea.title}</h3>
+                                    <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 1rem;">📅 ${new Date(idea.created_at).toLocaleDateString('pt-PT')}</p>
+                                </div>
                                 <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn btn-outline" onclick="viewIdea('${idea.id}')" style="flex: 1; font-size: 0.9rem;">👁️ Ver</button>
-                                    <button class="btn btn-outline" onclick="downloadPDF('${idea.id}')" style="flex: 1; font-size: 0.9rem;">📄 PDF</button>
+                                    <button class="btn btn-primary" onclick="viewIdea(${JSON.stringify(idea).replace(/"/g, '&quot;')})" style="flex: 1; font-size: 0.8rem; padding: 8px;">👁️ Abrir</button>
                                 </div>
                             </div>
                         `;
@@ -118,9 +118,9 @@
             }
         }
 
-        function viewIdea(ideaId) {
-            alert('Ver ideia: ' + ideaId);
-            // Implementar visualização detalhada
+        function viewIdea(idea) {
+            sessionStorage.setItem('last_generated_idea', JSON.stringify(idea));
+            window.location.href = 'result.html';
         }
 
         async function downloadPDF(ideaId) {

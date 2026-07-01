@@ -3,179 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tua Ideia - Eureka Labs Idefy</title>
+    <title>Resultado | Eureka Labs</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div id="particles-js"></div>
+
     <header>
-        <div class="logo-container">
+        <a href="index.html" class="logo-container">
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Idefy</span>
-        </div>
-        <div class="menu-btn">☰</div>
+            <span class="logo-text">Eureka Labs</span>
+        </a>
     </header>
 
-    <div class="overlay"></div>
+    <main style="padding-top: 80px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="fade-in" style="width: 100%; max-width: 900px; text-align: center;">
+            <div style="margin-bottom: 2rem;">
+                <h1 style="font-size: 1.2rem; color: #3b82f6; font-weight: 600; margin-bottom: 0.5rem;">Eureka ✓</h1>
+                <h2 style="font-size: 1.8rem; font-weight: 600;">Achamos a ideia perfeita para você</h2>
+            </div>
 
-    <nav class="side-menu">
-        <div class="close-menu">✕</div>
-        <ul class="menu-links">
-            <li><a href="index.html">🏠 Início</a></li>
-            <li><a href="inventory.html">📦 Inventário</a></li>
-            <li><a href="categories.html">🎯 Categorias</a></li>
-            <li><a href="profile.html">👤 Perfil</a></li>
-            <li><a href="about.html">ℹ️ Sobre</a></li>
-            <li><a href="javascript:logout()">🚪 Sair</a></li>
-        </ul>
-    </nav>
-
-    <main>
-        <div class="container fade-in" style="max-width: 700px;">
-            <div class="card">
-                <h1 style="text-align: center; margin-bottom: 2rem;">💡 Tua Ideia Gerada!</h1>
-
-                <div class="result-box">
-                    <h2 id="ideaTitle">Carregando...</h2>
-                    <div id="ideaContent" class="result-content" style="margin-top: 1rem;">
-                        Gerando a tua ideia com IA...
-                    </div>
+            <div id="resultContainer" class="card" style="padding: 1rem; background: rgba(15, 18, 26, 0.8); overflow: hidden; text-align: left; min-height: 400px; border-radius: 32px;">
+                <!-- O HTML gerado pela IA será injetado aqui -->
+                <div style="padding: 4rem; text-align: center; color: var(--text-dim);">
+                    <div class="loader-spinner" style="width: 40px; height: 40px; border: 3px solid rgba(59, 130, 246, 0.1); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem auto;"></div>
+                    A carregar a tua experiência...
                 </div>
+            </div>
 
-                <div class="ad-container" id="ad-banner-result">
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                    <!-- Banner Publicitário -->
-                    <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-xxxxxxxxxxxxxxxx" data-ad-slot="xxxxxxxx"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="saveToInventory()">
-                        💾 Guardar no Inventário
-                    </button>
-                    <button class="btn btn-outline" onclick="generatePDF()">
-                        📄 Gerar PDF
-                    </button>
-                    <button class="btn btn-outline" onclick="window.location.href='categories.html'">
-                        🔄 Nova Ideia
-                    </button>
-                </div>
+            <div style="margin-top: 2rem; display: flex; gap: 15px; justify-content: center;">
+                <a href="index.html" class="btn btn-outline">Nova Ideia</a>
+                <button onclick="window.print()" class="btn btn-primary">Imprimir Plano</button>
             </div>
         </div>
     </main>
 
-        <footer>
-        <div class="footer-separator"></div>
-        <div class="footer-links">
-            <a href="terms.html">Termos de Serviços</a>
-            <a href="about.html">Sobre</a>
-            <a href="privacy.html">Privacidade</a>
-            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
-        </div>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-github"></i>
-            </a>
-        </div>
-        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
-    </footer>
-
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="assets/js/main.js"></script>
     <script>
-        let generatedIdea = null;
-
-        function displayIdea() {
-            const ideaData = sessionStorage.getItem('generated_idea');
+        document.addEventListener('DOMContentLoaded', () => {
+            const ideaData = JSON.parse(sessionStorage.getItem('last_generated_idea'));
             
             if (!ideaData) {
-                document.getElementById('ideaContent').textContent = 'Erro: Nenhuma ideia foi gerada';
+                window.location.href = 'index.html';
                 return;
             }
 
-            generatedIdea = JSON.parse(ideaData);
-            document.getElementById('ideaTitle').textContent = generatedIdea.title || 'Tua Ideia';
-            document.getElementById('ideaContent').textContent = generatedIdea.content || 'Conteúdo não disponível';
-        }
-
-        async function saveToInventory() {
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            const container = document.getElementById('resultContainer');
+            // Injetar o conteúdo HTML gerado pela IA
+            container.innerHTML = ideaData.content;
             
-            if (!user) {
-                alert('Erro: Utilizador não autenticado');
-                return;
-            }
-
-            try {
-                const response = await fetch('https://eureka-labs-backend.onrender.com/api/save-idea.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        idea: generatedIdea
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('✅ Ideia guardada com sucesso!');
-                } else {
-                    alert(data.message || 'Erro ao guardar ideia');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor');
-            }
-        }
-
-        async function generatePDF() {
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
-            
-            if (!user) {
-                alert('Erro: Utilizador não autenticado');
-                return;
-            }
-
-            try {
-                const response = await fetch('https://eureka-labs-backend.onrender.com/api/generate-pdf.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        idea: generatedIdea
-                    })
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `ideia-${Date.now()}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                } else {
-                    alert('Erro ao gerar PDF');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor');
-            }
-        }
-
-        displayIdea();
+            lucide.createIcons();
+        });
     </script>
-
-    <script src="assets/js/main.js"></script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </body>
 </html>

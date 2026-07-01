@@ -3,135 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eureka Labs | Gerador Inteligente de Ideias</title>
-
-    <!-- Meta tags WhatsApp/Facebook/Discord -->
-    <meta property="og:title" content="Eureka Labs" />
-    <meta property="og:description" content="Não sabes o que fazer nas férias? Deixa-nos gerar ideias incríveis para ti!" />
-    <meta property="og:image" content="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" />
-    <meta property="og:url" content="https://anonymousdeveloper2025.github.io/EurekaLabs/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="pt_PT" />
-    
-    <!-- Twitter/X -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Eureka Labs">
-    <meta name="twitter:description" content="Não sabes o que fazer nas férias? Deixa-nos gerar ideias incríveis para ti!">
-    <meta name="twitter:image" content="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png">
-
+    <title>Eureka Labs | Idefy Assistant</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div id="particles-js"></div>
+
     <header>
         <a href="index.html" class="logo-container">
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div class="menu-btn" id="menuToggle">
+        <div class="menu-btn" id="menuToggle" style="cursor: pointer; color: white;">
             <i data-lucide="menu"></i>
         </div>
     </header>
 
-    <div class="overlay" id="overlay"></div>
-
-    <nav class="side-menu" id="sideMenu">
-        <div class="close-menu" id="closeMenu">
-            <i data-lucide="x"></i>
-        </div>
-        <ul class="menu-links">
-            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
-            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
-            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
-            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
-            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
-            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
+    <div class="overlay" id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500;"></div>
+    <nav class="side-menu" id="sideMenu" style="position:fixed; top:0; right:-300px; width:300px; height:100%; background:var(--secondary-bg); z-index:2000; transition:0.3s; padding:2rem;">
+        <div id="closeMenu" style="cursor:pointer; margin-bottom:2rem;"><i data-lucide="x"></i></div>
+        <ul style="list-style:none;">
+            <li style="margin-bottom:1.5rem;"><a href="index.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="home"></i> Início</a></li>
+            <li style="margin-bottom:1.5rem;"><a href="inventory.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="package"></i> Inventário</a></li>
+            <li style="margin-bottom:1.5rem;"><a href="categories.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="target"></i> Categorias</a></li>
+            <li style="margin-bottom:1.5rem;"><a href="profile.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="log-out"></i> Sair</a></li>
         </ul>
     </nav>
 
-    <main>
-        <div class="container fade-in">
-            <div class="card" style="text-align: center;">
-                <!-- Logo Centralizado -->
-                <div class="logo-hero">
-                    <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs">
-                </div>
+    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center;">
+        <div class="fade-in" style="width: 100%; max-width: 800px;">
+            <h1 style="font-size: 1.5rem; font-weight: 500; color: var(--text-muted); margin-bottom: 2rem;">Eureka Labs</h1>
+            
+            <div style="margin-bottom: 3rem;">
+                <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Idefy" style="width: 60px; filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));">
+            </div>
 
-                <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1.5rem; font-weight: 800; line-height: 1.1;">
-                    O Teu Próximo <span style="color: var(--accent-blue);">Plano</span> Começa Aqui
-                </h1>
-                <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem auto;">
-                    Transformamos o teu tempo livre em experiências memoráveis com o poder da Inteligência Artificial.
-                </p>
+            <h2 style="font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 600; margin-bottom: 1rem; letter-spacing: -0.5px;">
+                Gere suas ideias personalizáveis com o nosso assistente <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IDEFY</span>
+            </h2>
+            
+            <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 3rem;">
+                Não sabes por onde começar? Escolha entre categorias...
+            </p>
 
-                <div class="ad-container" id="ad-banner-1">
-                    <!-- AdsTerra Placeholder -->
-                    <div style="opacity: 0.5; font-size: 0.8rem;">Espaço Publicitário AdsTerra</div>
-                </div>
+            <div class="checkbox-group">
+                <div class="checkbox-item active" onclick="selectOption(1, this)">Ideia simples para férias</div>
+                <div class="checkbox-item" onclick="selectOption(2, this)">Plano completo de férias</div>
+            </div>
 
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <a href="categories.html" class="btn btn-primary">
-                        <i data-lucide="zap"></i> Criar Novo Plano
-                    </a>
-                    <a href="about.html" class="btn btn-outline">
-                        Saber Mais
-                    </a>
-                </div>
-
-                <div style="margin-top: 4rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
-                        <i data-lucide="brain-circuit" style="color: var(--accent-purple); margin-bottom: 1rem;"></i>
-                        <h3 style="margin-bottom: 0.5rem;">IA Criativa</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Algoritmos avançados que pensam fora da caixa.</p>
-                    </div>
-                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
-                        <i data-lucide="file-text" style="color: var(--accent-blue); margin-bottom: 1rem;"></i>
-                        <h3 style="margin-bottom: 0.5rem;">PDF Export</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Leva os teus planos contigo em formato profissional.</p>
-                    </div>
-                    <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px;">
-                        <i data-lucide="shield-check" style="color: var(--accent-purple); margin-bottom: 1rem;"></i>
-                        <h3 style="margin-bottom: 0.5rem;">Seguro</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Os teus dados e inventário protegidos.</p>
-                    </div>
+            <div class="search-pill-container">
+                <i data-lucide="plus" style="color: var(--text-dim);"></i>
+                <input type="text" id="promptInput" class="search-pill-input" placeholder="Sobre o que queres a ideia?">
+                <i data-lucide="mic" style="color: var(--text-dim);"></i>
+                <div onclick="startFastGenerate()" style="background: #3b82f6; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="arrow-up" style="color: white; width: 18px;"></i>
                 </div>
             </div>
         </div>
     </main>
 
-        <footer>
-        <div class="footer-separator"></div>
+    <div class="loader-container" id="globalLoader">
+        <div class="loader-text">Eureka Labs</div>
+        <svg class="loader-svg" viewBox="0 0 24 24">
+            <path d="M9 21h6M12 17v4M12 3c-4.97 0-9 4.03-9 9 0 2.4 1 4.5 2.6 6H18.4c1.6-1.5 2.6-3.6 2.6-6 0-4.97-4.03-9-9-9z"/>
+        </svg>
+    </div>
+
+    <footer>
         <div class="footer-links">
             <a href="terms.html">Termos de Serviços</a>
             <a href="about.html">Sobre</a>
             <a href="privacy.html">Privacidade</a>
-            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
+            <a href="help.html">Ajuda</a>
         </div>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-github"></i>
-            </a>
-        </div>
-        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <p>© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
+        let selectedMode = 1; // 1: Simples, 2: Completo
+
+        function selectOption(mode, el) {
+            selectedMode = mode;
+            document.querySelectorAll('.checkbox-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            
+            const input = document.getElementById('promptInput');
+            if(mode === 1) {
+                input.placeholder = "Sobre o que queres a ideia simples?";
+            } else {
+                input.placeholder = "Sobre o que queres o plano completo?";
+            }
+        }
+
+        async function startFastGenerate() {
+            const topic = document.getElementById('promptInput').value;
+            if(!topic) {
+                alert("Por favor, escreve sobre o que queres a ideia.");
+                return;
+            }
+
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            if(!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('globalLoader').style.display = 'flex';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        topic: topic,
+                        mode: selectedMode === 1 ? 'simple' : 'full',
+                        user_id: user.id
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
+                    window.location.href = 'result.html';
+                } else {
+                    alert(data.message || 'Erro ao gerar');
+                    document.getElementById('globalLoader').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor');
+                document.getElementById('globalLoader').style.display = 'none';
+            }
+        }
+
         lucide.createIcons();
     </script>
 </body>

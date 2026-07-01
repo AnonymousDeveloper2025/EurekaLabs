@@ -57,6 +57,7 @@
                 </div>
 
                 <div id="questionWrapper" class="question-box">
+                    <p style="color: var(--accent-blue); font-weight: 500; margin-bottom: 1rem;">O assistente IDEFY irá guiar-te a construir um plano</p>
                     <h1 id="questionTitle" style="font-size: 1.5rem; margin-bottom: 2rem;">Carregando pergunta...</h1>
                     <div id="optionsList"></div>
                 </div>
@@ -66,9 +67,14 @@
                 </div>
 
                 <div style="display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden;">
-                        <i data-lucide="arrow-left"></i> Voltar
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden;">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        <button class="btn btn-outline" onclick="skipToSimple()" style="font-size: 0.8rem;">
+                            Pular <br> Gerar ideia simples
+                        </button>
+                    </div>
                     <button id="nextBtn" class="btn btn-primary" onclick="handleNext()">
                         Próximo <i data-lucide="arrow-right"></i>
                     </button>
@@ -186,6 +192,29 @@
                 alert('Erro ao conectar com o servidor de IA');
                 window.location.href = 'categories.html';
             }
+        }
+
+        function skipToSimple() {
+            const topic = category.replace('-', ' ');
+            document.getElementById('globalLoader').style.display = 'flex';
+            
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            fetch(`${API_BASE_URL}/api/generate-idea.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    topic: topic,
+                    mode: 'simple',
+                    user_id: user.id
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
+                    window.location.href = 'result.html';
+                }
+            });
         }
 
         init();
