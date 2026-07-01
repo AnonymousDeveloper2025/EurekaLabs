@@ -10,12 +10,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div id="particles-js"></div>
     <header>
         <a href="index.html" class="logo-container">
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div class="menu-btn" id="menuToggle">
+        <div id="menuToggle" class="menu-btn" aria-label="Abrir menu">
             <i data-lucide="menu"></i>
         </div>
     </header>
@@ -40,57 +41,45 @@
         <div class="container fade-in">
             <div class="card">
                 <h1 style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center;">Sobre o Eureka Labs</h1>
-                <p style="font-size: 1.1rem; color: var(--text-muted); text-align: center; max-width: 700px; margin: 0 auto 3rem auto;">
-                    Somos uma equipa de desenvolvedores apaixonados por tecnologia e inovação. O Eureka Labs nasceu da ideia de transformar o tempo livre em experiências memoráveis através da Inteligência Artificial.
+                <p style="font-size: 1.1rem; color: var(--text-dim); text-align: center; max-width: 700px; margin: 0 auto 3rem auto;">
+                    Somos uma equipa de desenvolvedores apaixonados por tecnologia e inovação. O Eureka Labs nasceu da ideia de transformar o tempo livre em experiências memoráveis através da[...] 
                 </p>
 
                 <div style="margin-top: 4rem;">
                     <h2 style="font-size: 1.8rem; margin-bottom: 3rem; text-align: center;">A Nossa Equipa</h2>
-                    
+
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
                         <!-- Dev 1 -->
-                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); transition: var(--transition);" onmouseover="this.style.borderColor='var(--accent-purple)'; this.style.boxShadow='0 0 20px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
-                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-radius: 50%; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2);">
+                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-radius: 50%; margin: 0 auto 1.5rem auto; display:flex; align-items:center; justify-content:center;">
                                 <i class="fas fa-code"></i>
                             </div>
                             <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">André Hïmï</h3>
                             <p style="color: var(--accent-blue); font-weight: 600; margin-bottom: 1rem;">Full Stack Developer</p>
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                Especialista em desenvolvimento web e mobile. André traz criatividade e expertise técnica para transformar ideias em realidade. Apaixonado por criar experiências digitais intuitivas e impactantes.
+                            <p style="color: var(--text-dim); line-height: 1.6;">
+                                Especialista em desenvolvimento web e mobile. André traz criatividade e expertise técnica para transformar ideias em realidade. Apaixonado por criar experiências[...] 
                             </p>
                             <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px;">
-                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
-                                    <i class="fab fa-github fa-lg"></i>
-                                </a>
-                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
-                                    <i class="fab fa-linkedin fa-lg"></i>
-                                </a>
-                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);" onmouseover="this.style.color='var(--accent-purple)'" onmouseout="this.style.color='var(--accent-blue)'">
-                                    <i class="fab fa-twitter fa-lg"></i>
-                                </a>
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);"><i class="fab fa-github fa-lg"></i></a>
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);"><i class="fab fa-linkedin fa-lg"></i></a>
+                                <a href="#" style="color: var(--accent-blue); transition: var(--transition);"><i class="fab fa-twitter fa-lg"></i></a>
                             </div>
                         </div>
 
                         <!-- Dev 2 -->
-                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); transition: var(--transition);" onmouseover="this.style.borderColor='var(--accent-purple)'; this.style.boxShadow='0 0 20px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
-                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); border-radius: 50%; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                        <div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 2rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2);">
+                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); border-radius: 50%; margin: 0 auto 1.5rem auto; display:flex; align-items:center; justify-content:center;">
                                 <i class="fas fa-rocket"></i>
                             </div>
                             <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Anderson Muanza</h3>
                             <p style="color: var(--accent-purple); font-weight: 600; margin-bottom: 1rem;">Backend & DevOps Engineer</p>
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                Especialista em arquitetura de sistemas e infraestrutura em nuvem. Anderson garante que o Eureka Labs funciona de forma robusta e escalável. Visionário na otimização de processos e performance.
+                            <p style="color: var(--text-dim); line-height: 1.6;">
+                                Especialista em arquitetura de sistemas e infraestrutura em nuvem. Anderson garante que o Eureka Labs funciona de forma robusta e escalável. Visionário na otimiza[...] 
                             </p>
                             <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 15px;">
-                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
-                                    <i class="fab fa-github fa-lg"></i>
-                                </a>
-                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
-                                    <i class="fab fa-linkedin fa-lg"></i>
-                                </a>
-                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);" onmouseover="this.style.color='var(--accent-blue)'" onmouseout="this.style.color='var(--accent-purple)'">
-                                    <i class="fab fa-twitter fa-lg"></i>
-                                </a>
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);"><i class="fab fa-github fa-lg"></i></a>
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);"><i class="fab fa-linkedin fa-lg"></i></a>
+                                <a href="#" style="color: var(--accent-purple); transition: var(--transition);"><i class="fab fa-twitter fa-lg"></i></a>
                             </div>
                         </div>
                     </div>
@@ -100,25 +89,19 @@
                     <h2 style="font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">A Nossa Missão</h2>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
                         <div style="padding: 1.5rem;">
-                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;">
-                                <i class="fas fa-lightbulb"></i>
-                            </div>
+                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i></div>
                             <h3 style="margin-bottom: 0.5rem;">Inspiração</h3>
-                            <p style="color: var(--text-muted);">Transformar o tempo livre em oportunidades de crescimento e diversão.</p>
+                            <p style="color: var(--text-dim);">Transformar o tempo livre em oportunidades de crescimento e diversão.</p>
                         </div>
                         <div style="padding: 1.5rem;">
-                            <div style="font-size: 2rem; color: var(--accent-purple); margin-bottom: 1rem;">
-                                <i class="fas fa-brain"></i>
-                            </div>
+                            <div style="font-size: 2rem; color: var(--accent-purple); margin-bottom: 1rem;"><i class="fas fa-brain"></i></div>
                             <h3 style="margin-bottom: 0.5rem;">Inovação</h3>
-                            <p style="color: var(--text-muted);">Utilizar IA avançada para gerar ideias criativas e personalizadas.</p>
+                            <p style="color: var(--text-dim);">Utilizar IA avançada para gerar ideias criativas e personalizadas.</p>
                         </div>
                         <div style="padding: 1.5rem;">
-                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;">
-                                <i class="fas fa-heart"></i>
-                            </div>
+                            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 1rem;"><i class="fas fa-heart"></i></div>
                             <h3 style="margin-bottom: 0.5rem;">Impacto</h3>
-                            <p style="color: var(--text-muted);">Criar valor real nas vidas dos nossos utilizadores.</p>
+                            <p style="color: var(--text-dim);">Criar valor real nas vidas dos nossos utilizadores.</p>
                         </div>
                     </div>
                 </div>
@@ -126,29 +109,14 @@
         </div>
     </main>
 
-        <footer>
-        <div class="footer-separator"></div>
+    <footer class="site-footer">
         <div class="footer-links">
             <a href="terms.html">Termos de Serviços</a>
             <a href="about.html">Sobre</a>
             <a href="privacy.html">Privacidade</a>
-            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
+            <a href="help.html">Ajuda</a>
         </div>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-github"></i>
-            </a>
-        </div>
-        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <p class="footer-copy">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
     </footer>
 
     <script src="assets/js/main.js"></script>
