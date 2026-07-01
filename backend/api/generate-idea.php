@@ -1,6 +1,14 @@
 <?php
 require_once '../../config.php';
 
+// Headers CORS já definidos no config.php, mas reforçamos aqui para segurança extra
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = ['https://anonymousdeveloper2025.github.io', 'http://eurekalabs.great-site.net', 'https://eurekalabs.great-site.net'];
+
+if (in_array($origin, $allowed)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+
 header('Content-Type: application/json');
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -16,23 +24,19 @@ if (!$userId) {
     exit;
 }
 
-$answersText = !empty($answers) ? "Preferências adicionais: " . implode(', ', $answers) : "";
+$answersText = !empty($answers) ? "Preferências: " . implode(', ', $answers) : "";
 
-$systemPersona = "Tu és o IDEFY, o assistente de inteligência artificial ultra-avançado do Eureka Labs. 
-Tu respondes APENAS com código HTML e CSS inline (dentro de uma div contentora). 
-Usa cores: #3b82f6 (azul), #8b5cf6 (roxo), #ffffff (branco). 
-Usa bordas arredondadas (30px+), glassmorphism e animações CSS.";
+$systemPersona = "Tu és o IDEFY, assistente de elite do Eureka Labs. 
+Responde APENAS com HTML e CSS inline. 
+Design: Modern Dark, Glassmorphism, Cores #3b82f6 e #8b5cf6. 
+Inclui animações fade-in e tabelas se for plano completo.";
 
-if ($mode === 'full') {
-    $prompt = "$systemPersona TAREFA: Gera um PLANO COMPLETO DE FÉRIAS sobre: '$topic'. $answersText";
-} else {
-    $prompt = "$systemPersona TAREFA: Gera uma IDEIA SIMPLES sobre: '$topic'. $answersText";
-}
+$prompt = "$systemPersona TAREFA: Gera um " . ($mode === 'full' ? "PLANO COMPLETO" : "IDEIA SIMPLES") . " sobre: '$topic'. $answersText";
 
 $response = callGeminiAPI($prompt);
 
 if (!isset($response['candidates'][0]['content']['parts'][0]['text'])) {
-    echo json_encode(['success' => false, 'message' => 'Erro ao processar a ideia.']);
+    echo json_encode(['success' => false, 'message' => 'Erro ao processar com o IDEFY.']);
     exit;
 }
 

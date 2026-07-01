@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eureka Labs | Idefy Assistant</title>
+    <title>Eureka Labs | Elite IA Assistant</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
     <div id="particles-js"></div>
@@ -16,132 +17,96 @@
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div class="menu-btn" id="menuToggle" style="cursor: pointer; color: white;">
-            <i data-lucide="menu"></i>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="login.html" class="btn btn-outline" style="padding: 10px 20px; font-size: 0.85rem;">Entrar</a>
+            <a href="register.html" class="btn btn-primary" style="padding: 10px 25px; font-size: 0.85rem;">Começar</a>
         </div>
     </header>
 
-    <div class="overlay" id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1500;"></div>
-    <nav class="side-menu" id="sideMenu" style="position:fixed; top:0; right:-300px; width:300px; height:100%; background:var(--secondary-bg); z-index:2000; transition:0.3s; padding:2rem;">
-        <div id="closeMenu" style="cursor:pointer; margin-bottom:2rem;"><i data-lucide="x"></i></div>
-        <ul style="list-style:none;">
-            <li style="margin-bottom:1.5rem;"><a href="index.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="home"></i> Início</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="inventory.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="package"></i> Inventário</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="categories.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="target"></i> Categorias</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="profile.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="user"></i> Perfil</a></li>
-            <li><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:10px;"><i data-lucide="log-out"></i> Sair</a></li>
-        </ul>
-    </nav>
-
-    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center;">
-        <div class="fade-in" style="width: 100%; max-width: 800px;">
-            <h1 style="font-size: 1.5rem; font-weight: 500; color: var(--text-muted); margin-bottom: 2rem;">Eureka Labs</h1>
-            
-            <div style="margin-bottom: 3rem;">
-                <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Idefy" style="width: 60px; filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));">
+    <main class="container page-fade-in" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh;">
+        <div style="max-width: 850px; width: 100%;">
+            <div id="hero-content">
+                <h1 id="hero-title" style="font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px;">
+                    Em que posso ajudar, <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eureka</span>?
+                </h1>
+                <p style="color: var(--text-dim); font-size: 1.25rem; margin-bottom: 3.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Transformamos o teu tempo livre em experiências memoráveis com o nosso assistente IDEFY.</p>
             </div>
 
-            <h2 style="font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 600; margin-bottom: 1rem; letter-spacing: -0.5px;">
-                Gere suas ideias personalizáveis com o nosso assistente <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IDEFY</span>
-            </h2>
-            
-            <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 3rem;">
-                Não sabes por onde começar? Escolha entre categorias...
-            </p>
+            <form id="searchForm" class="pill-input-container">
+                <input type="text" id="topicInput" class="pill-input" placeholder="Peça ao Idefy... (ex: Plano de férias em Portugal)" autocomplete="off">
+                <button type="submit" style="background: var(--accent-blue); border: none; color: white; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth);">
+                    <i data-lucide="arrow-up" style="width: 20px; height: 20px;"></i>
+                </button>
+            </form>
 
-            <div class="checkbox-group">
-                <div class="checkbox-item active" onclick="selectOption(1, this)">Ideia simples para férias</div>
-                <div class="checkbox-item" onclick="selectOption(2, this)">Plano completo de férias</div>
-            </div>
-
-            <div class="search-pill-container">
-                <i data-lucide="plus" style="color: var(--text-dim);"></i>
-                <input type="text" id="promptInput" class="search-pill-input" placeholder="Sobre o que queres a ideia?">
-                <i data-lucide="mic" style="color: var(--text-dim);"></i>
-                <div onclick="startFastGenerate()" style="background: #3b82f6; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="arrow-up" style="color: white; width: 18px;"></i>
-                </div>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 2rem;">
+                <button type="button" class="btn btn-outline mode-btn active" onclick="setMode('simple', this)">
+                    <i data-lucide="zap" style="width: 18px;"></i> Ideia Simples
+                </button>
+                <button type="button" class="btn btn-outline mode-btn" onclick="setMode('full', this)">
+                    <i data-lucide="layout" style="width: 18px;"></i> Plano Completo
+                </button>
             </div>
         </div>
     </main>
 
-    <div class="loader-container" id="globalLoader">
-        <div class="loader-text">Eureka Labs</div>
-        <svg class="loader-svg" viewBox="0 0 24 24">
-            <path d="M9 21h6M12 17v4M12 3c-4.97 0-9 4.03-9 9 0 2.4 1 4.5 2.6 6H18.4c1.6-1.5 2.6-3.6 2.6-6 0-4.97-4.03-9-9-9z"/>
-        </svg>
-    </div>
-
     <footer>
         <div class="footer-links">
-            <a href="terms.html">Termos de Serviços</a>
+            <a href="terms.html">Termos</a>
             <a href="about.html">Sobre</a>
             <a href="privacy.html">Privacidade</a>
             <a href="help.html">Ajuda</a>
         </div>
-        <p>© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <p style="font-size: 0.85rem; opacity: 0.5;">© 2026 ∀nonymous Developer — Eureka Labs Elite Version</p>
     </footer>
+
+    <!-- Loader Profissional -->
+    <div id="globalLoader" class="loader-container">
+        <div class="loader-logo-wrap">
+            <div class="loader-glow"></div>
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" style="width: 80px; position: relative; z-index: 2; filter: drop-shadow(0 0 20px #3b82f6);">
+        </div>
+        <h2 id="loaderStatus" style="margin-top: 2.5rem; font-size: 1.3rem; font-weight: 500; letter-spacing: 1px; color: white;">O IDEFY ESTÁ A CRIAR...</h2>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        let selectedMode = 1; // 1: Simples, 2: Completo
+        let currentMode = 'simple';
 
-        function selectOption(mode, el) {
-            selectedMode = mode;
-            document.querySelectorAll('.checkbox-item').forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
+        function setMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+            btn.classList.add('active');
+            gsap.from(btn, { scale: 0.95, duration: 0.3, ease: "elastic.out(1, 0.3)" });
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const topic = document.getElementById('topicInput').value;
+            if (!topic) return;
+
+            sessionStorage.setItem('selected_topic', topic);
+            sessionStorage.setItem('selected_mode', currentMode);
             
-            const input = document.getElementById('promptInput');
-            if(mode === 1) {
-                input.placeholder = "Sobre o que queres a ideia simples?";
-            } else {
-                input.placeholder = "Sobre o que queres o plano completo?";
-            }
-        }
+            gsap.to('main', { opacity: 0, y: -30, duration: 0.6, ease: "power4.in", onComplete: () => {
+                window.location.href = 'categories.html';
+            }});
+        });
 
-        async function startFastGenerate() {
-            const topic = document.getElementById('promptInput').value;
-            if(!topic) {
-                alert("Por favor, escreve sobre o que queres a ideia.");
-                return;
-            }
-
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
-            if(!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            document.getElementById('globalLoader').style.display = 'flex';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        topic: topic,
-                        mode: selectedMode === 1 ? 'simple' : 'full',
-                        user_id: user.id
-                    })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
-                    window.location.href = 'result.html';
-                } else {
-                    alert(data.message || 'Erro ao gerar');
-                    document.getElementById('globalLoader').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor');
-                document.getElementById('globalLoader').style.display = 'none';
-            }
-        }
+        // GSAP Hero Animation
+        gsap.from('#hero-content', { opacity: 0, y: 40, duration: 1.2, ease: "power4.out" });
+        gsap.from('.pill-input-container', { opacity: 0, y: 20, duration: 1, delay: 0.4, ease: "power4.out" });
+        gsap.from('.mode-btn', { opacity: 0, y: 10, stagger: 0.1, delay: 0.7, duration: 0.8 });
 
         lucide.createIcons();
     </script>
+    <style>
+        .mode-btn.active {
+            background: rgba(255,255,255,0.08);
+            border-color: white;
+            color: white;
+        }
+    </style>
 </body>
 </html>

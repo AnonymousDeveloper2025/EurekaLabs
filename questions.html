@@ -3,79 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personalizar Plano | Eureka Labs</title>
+    <title>Personalizar | Eureka Labs</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
     <div id="particles-js"></div>
-    <div class="loader-container" id="globalLoader">
-        <div class="loader-content">
-            <div class="loader-text">Eureka Labs</div>
-            <svg class="loader-svg" viewBox="0 0 24 24">
-                <path d="M9 21h6M12 17v4M12 3c-4.97 0-9 4.03-9 9 0 2.4 1 4.5 2.6 6H18.4c1.6-1.5 2.6-3.6 2.6-6 0-4.97-4.03-9-9-9z"/>
-            </svg>
-        </div>
-    </div>
     <header>
         <a href="index.html" class="logo-container">
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div class="menu-btn" id="menuToggle">
-            <i data-lucide="menu"></i>
-        </div>
     </header>
 
-    <div class="overlay" id="overlay"></div>
-
-    <nav class="side-menu" id="sideMenu">
-        <div class="close-menu" id="closeMenu">
-            <i data-lucide="x"></i>
-        </div>
-        <ul class="menu-links">
-            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
-            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
-            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
-            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
-            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
-            <li style="margin-top: 2rem;"><a href="javascript:logout()" style="color: #ff6b6b;"><i data-lucide="log-out"></i> Sair</a></li>
-        </ul>
-    </nav>
-
-    <main>
-        <div class="container fade-in" style="max-width: 650px;">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 id="questionStep" style="font-size: 1rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1px;">Passo 1 de 5</h2>
-                    <div id="categoryBadge" style="padding: 4px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 20px; font-size: 0.8rem; color: var(--accent-blue);">Categoria</div>
-                </div>
-
-                <div class="progress-container" style="margin-bottom: 3rem;">
-                    <div class="progress-bar" id="progressBar" style="width: 20%;"></div>
-                </div>
-
-                <div id="questionWrapper" class="question-box">
-                    <p style="color: var(--accent-blue); font-weight: 500; margin-bottom: 1rem;">O assistente IDEFY irá guiar-te a construir um plano</p>
-                    <h1 id="questionTitle" style="font-size: 1.5rem; margin-bottom: 2rem;">Carregando pergunta...</h1>
-                    <div id="optionsList"></div>
-                </div>
-
-                <div class="ad-container">
-                    <div style="opacity: 0.5; font-size: 0.8rem;">Anúncio AdsTerra</div>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <div style="display: flex; gap: 10px;">
-                        <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden;">
-                            <i data-lucide="arrow-left"></i>
-                        </button>
-                        <button class="btn btn-outline" onclick="skipToSimple()" style="font-size: 0.8rem;">
-                            Pular <br> Gerar ideia simples
-                        </button>
+    <main class="container page-fade-in">
+        <div style="max-width: 650px; margin: 0 auto;">
+            <div class="card" id="questionCard">
+                <div style="margin-bottom: 2rem;">
+                    <div style="width: 100%; height: 4px; background: var(--glass-border); border-radius: 10px; overflow: hidden;">
+                        <div id="progressBar" style="width: 0%; height: 100%; background: var(--accent-blue); transition: width 0.5s ease;"></div>
                     </div>
-                    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()">
+                </div>
+
+                <p style="color: var(--accent-blue); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Assistente IDEFY</p>
+                <h1 id="questionTitle" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2.5rem; line-height: 1.3;">A carregar perguntas...</h1>
+                
+                <div id="optionsList"></div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 3rem; align-items: center;">
+                    <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden; padding: 12px 25px;">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    
+                    <button class="btn btn-outline" onclick="skipToGenerate()" style="font-size: 0.85rem; border-color: transparent;">
+                        Pular e gerar agora
+                    </button>
+
+                    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()" style="padding: 12px 30px;">
                         Próximo <i data-lucide="arrow-right"></i>
                     </button>
                 </div>
@@ -83,71 +49,80 @@
         </div>
     </main>
 
+    <!-- Loader Profissional -->
+    <div id="globalLoader" class="loader-container">
+        <div class="loader-logo-wrap">
+            <div class="loader-glow"></div>
+            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" style="width: 80px; position: relative; z-index: 2; filter: drop-shadow(0 0 20px #3b82f6);">
+        </div>
+        <h2 id="loaderStatus" style="margin-top: 2.5rem; font-size: 1.3rem; font-weight: 500; color: white;">O IDEFY ESTÁ A CRIAR...</h2>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        const questionData = {
+        const category = sessionStorage.getItem('selected_category');
+        const topic = sessionStorage.getItem('selected_topic');
+        const mode = sessionStorage.getItem('selected_mode') || 'simple';
+        
+        let currentStep = 0;
+        let answers = [];
+        let questions = [];
+
+        const categoryQuestions = {
             'vida-pessoal': [
-                { q: 'Qual é o teu objetivo principal para estas férias?', options: ['Descanso total', 'Crescimento pessoal', 'Novos hábitos', 'Organização de vida'] },
-                { q: 'Quanto tempo pretendes dedicar diariamente?', options: ['30 min', '1-2 horas', 'Metade do dia', 'Tempo livre total'] },
-                { q: 'Preferes atividades...', options: ['Solitárias e reflexivas', 'Sociais e interativas', 'Mistas'] },
-                { q: 'Qual é o teu nível de motivação atual?', options: ['Preciso de um empurrão', 'Moderado', 'Muito motivado'] },
-                { q: 'Tens algum orçamento para investir em ti?', options: ['Zero', 'Pequeno (Kumbuzinho)', 'Moderado', 'Sem limites'] }
+                { q: "Qual é o teu foco principal?", options: ["Organização", "Saúde Mental", "Produtividade", "Hobbies"] },
+                { q: "Quanto tempo tens disponível?", options: ["15-30 min", "1-2 horas", "Meio dia", "Dia inteiro"] }
             ],
             'aventura': [
-                { q: 'Que tipo de ambiente preferes?', options: ['Praia/Mar', 'Montanha/Natureza', 'Cidade/Urbano', 'Deserto/Inexplorado'] },
-                { q: 'Qual é o teu nível de adrenalina desejado?', options: ['Relaxado', 'Moderado', 'Radical', 'Extremo'] },
-                { q: 'Como pretendes deslocar-te?', options: ['Carro próprio', 'Transportes públicos', 'Caminhada/Bicicleta', 'Aluguer'] },
-                { q: 'Qual é a duração ideal da aventura?', options: ['Um dia (Bate-volta)', 'Fim de semana', 'Uma semana', 'Mais de uma semana'] },
-                { q: 'Vais com companhia?', options: ['Sozinho(a)', 'Parceiro(a)', 'Grupo de amigos', 'Família'] }
+                { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
+                { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
             ]
-            // Outras categorias seriam expandidas aqui...
+            // Adicionar mais conforme necessário
         };
 
-        let currentStep = 0;
-        let userAnswers = [];
-        const category = sessionStorage.getItem('selected_category') || 'vida-pessoal';
-        const questions = questionData[category] || questionData['vida-pessoal'];
-
         function init() {
-            document.getElementById('categoryBadge').textContent = category.replace('-', ' ').toUpperCase();
+            questions = categoryQuestions[category] || [
+                { q: "Como te sentes hoje?", options: ["Inspirado", "Cansado", "Curioso", "Determinado"] },
+                { q: "Qual o objetivo desta ideia?", options: ["Aprender algo", "Divertir-me", "Resolver um problema", "Relaxar"] }
+            ];
             renderQuestion();
-            lucide.createIcons();
         }
 
         function renderQuestion() {
             const q = questions[currentStep];
-            document.getElementById('questionStep').textContent = `Passo ${currentStep + 1} de ${questions.length}`;
+            document.getElementById('questionTitle').innerText = q.q;
             document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
-            document.getElementById('questionTitle').textContent = q.q;
-
+            
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
             
-            q.options.forEach((opt, i) => {
-                const div = document.createElement('div');
-                div.className = `option-label ${userAnswers[currentStep] === opt ? 'selected' : ''}`;
-                div.innerHTML = `<span>${opt}</span>`;
-                div.onclick = () => selectOption(opt);
-                list.appendChild(div);
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = () => selectOption(opt, btn);
+                if(answers[currentStep] === opt) btn.classList.add('active');
+                list.appendChild(btn);
             });
 
             document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
-            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Plano <i data-lucide="sparkles"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
+            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
             lucide.createIcons();
+            
+            gsap.from('.option-btn', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
 
-        function selectOption(opt) {
-            userAnswers[currentStep] = opt;
-            renderQuestion();
+        function selectOption(opt, btn) {
+            answers[currentStep] = opt;
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            setTimeout(handleNext, 300);
         }
 
         function handleNext() {
-            if (!userAnswers[currentStep]) {
-                alert('Por favor, seleciona uma opção para continuar.');
-                return;
-            }
-
-            if (currentStep < questions.length - 1) {
+            if(!answers[currentStep]) return;
+            if(currentStep < questions.length - 1) {
                 currentStep++;
                 renderQuestion();
             } else {
@@ -156,65 +131,45 @@
         }
 
         function handlePrev() {
-            if (currentStep > 0) {
+            if(currentStep > 0) {
                 currentStep--;
                 renderQuestion();
             }
         }
 
-        async function startGeneration() {
-            const loader = document.getElementById('globalLoader');
-            loader.style.display = 'flex';
+        function skipToGenerate() {
+            startGeneration();
+        }
 
+        async function startGeneration() {
+            document.getElementById('globalLoader').style.display = 'flex';
+            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            
             try {
-                const user = JSON.parse(localStorage.getItem('idefy_user'));
                 const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
+                        user_id: user?.id,
+                        topic: topic || category,
+                        mode: mode,
                         category: category,
-                        answers: userAnswers,
-                        user_id: user.id
+                        answers: answers
                     })
                 });
 
                 const data = await response.json();
-
-                if (data.success) {
-                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
-                    window.location.href = 'result.html';
-                } else {
-                    alert(data.message || 'Erro ao gerar ideia');
-                    window.location.href = 'categories.html';
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor de IA');
-                window.location.href = 'categories.html';
-            }
-        }
-
-        function skipToSimple() {
-            const topic = category.replace('-', ' ');
-            document.getElementById('globalLoader').style.display = 'flex';
-            
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
-            fetch(`${API_BASE_URL}/api/generate-idea.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    topic: topic,
-                    mode: 'simple',
-                    user_id: user.id
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
                 if(data.success) {
                     sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
                     window.location.href = 'result.html';
+                } else {
+                    alert(data.message);
+                    document.getElementById('globalLoader').style.display = 'none';
                 }
-            });
+            } catch (e) {
+                alert("Erro ao conectar com o IDEFY.");
+                document.getElementById('globalLoader').style.display = 'none';
+            }
         }
 
         init();

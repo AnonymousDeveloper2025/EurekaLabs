@@ -1,46 +1,43 @@
 <?php
 // ============================================
-// CONFIGURAÇÃO DO EUREKA LABS - RENDER VERSION
+// CONFIGURAÇÃO DO EUREKA LABS - ELITE VERSION
 // ============================================
 
-// Base de Dados (Variáveis de Ambiente do Render)
+// Base de Dados (PostgreSQL)
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: 'password');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// API Gemini
+// API Gemini 1.5 Flash (Melhor resolução e velocidade)
 define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
+define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent');
 
-// Unsplash
-define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: 'YOUR_UNSPLASH_API_KEY_HERE');
-define('UNSPLASH_API_URL', 'https://api.unsplash.com');
+// Frontend URL - CORS
+$allowed_origins = [
+    'https://anonymousdeveloper2025.github.io',
+    'http://eurekalabs.great-site.net',
+    'https://eurekalabs.great-site.net'
+];
 
-// Frontend URL
-define('FRONTEND_URL', getenv('FRONTEND_URL') ?: 'https://anonymousdeveloper2025.github.io');
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-// JWT Secret
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your_super_secret_key_change_this');
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else {
+    header("Access-Control-Allow-Origin: https://anonymousdeveloper2025.github.io");
+}
 
-// Headers CORS dinâmicos
-header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Content-Type: application/json');
+header('Access-Control-Allow-Credentials: true');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-// Resposta JSON
-function jsonResponse($success, $message = '', $data = []) {
-    return json_encode([
-        'success' => $success,
-        'message' => $message,
-        'data' => $data
-    ]);
-}
+header('Content-Type: application/json');
 
 // Conexão à base de dados (PostgreSQL via PDO)
 function getDBConnection() {
@@ -72,36 +69,29 @@ function getDBConnection() {
     }
 }
 
-// API Gemini Call
+// API Gemini Call (v1.5 Flash)
 function callGeminiAPI($prompt) {
-    $ch = curl_init();
+    $url = GEMINI_API_URL . '?key=' . GEMINI_API_KEY;
+    $data = [
+        'contents' => [['parts' => [['text' => $prompt]]]]
+    ];
+
+    $ch = curl_init($url);
     curl_setopt_array($ch, [
-        CURLOPT_URL => GEMINI_API_URL . '?key=' . GEMINI_API_KEY,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
         CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode([
-            'contents' => [['parts' => [['text' => $prompt]]]]
-        ])
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_TIMEOUT => 45 // Render timeout safe
     ]);
+    
     $response = curl_exec($ch);
     curl_close($ch);
     return json_decode($response, true);
 }
 
-// Unsplash Image
-function getUnsplashImage($query) {
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => UNSPLASH_API_URL . '/search/photos?query=' . urlencode($query) . '&client_id=' . UNSPLASH_API_KEY,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => ['Accept-Version: v1']
-    ]);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    $data = json_decode($response, true);
-    return !empty($data['results']) ? $data['results'][0]['urls']['regular'] : null;
-}
+// JWT Secret
+define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your_super_secret_key_change_this');
 
 // Auth Helpers
 function isValidEmail($email) { return filter_var($email, FILTER_VALIDATE_EMAIL); }

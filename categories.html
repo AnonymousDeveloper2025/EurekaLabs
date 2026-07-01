@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categorias | Eureka Labs</title>
+    <title>Categorias | Eureka Labs Elite</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
     <div id="particles-js"></div>
@@ -15,7 +16,7 @@
             <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
             <span class="logo-text">Eureka Labs</span>
         </a>
-        <div class="menu-btn" id="menuToggle" style="cursor: pointer; color: white;">
+        <div id="menuToggle" style="cursor: pointer; color: white; padding: 10px;">
             <i data-lucide="menu"></i>
         </div>
     </header>
@@ -28,74 +29,98 @@
             <li style="margin-bottom:1.5rem;"><a href="inventory.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="package"></i> Inventário</a></li>
             <li style="margin-bottom:1.5rem;"><a href="categories.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="target"></i> Categorias</a></li>
             <li style="margin-bottom:1.5rem;"><a href="profile.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="user"></i> Perfil</a></li>
-            <li style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--pill-border);"><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="log-out"></i> Sair</a></li>
+            <li style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--glass-border);"><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="log-out"></i> Sair</a></li>
         </ul>
     </nav>
 
-    <main>
-        <div class="container fade-in">
-            <div style="text-align: center; margin-bottom: 4rem;">
-                <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(to right, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">O que procuras hoje?</h1>
-                <p style="color: var(--text-muted); font-size: 1.2rem;">Escolhe um caminho e deixa a nossa IA guiar-te.</p>
+    <main class="container page-fade-in">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1.5px;">O que procuras hoje?</h1>
+            <p style="color: var(--text-dim); font-size: 1.15rem;">Seleciona uma categoria para o IDEFY personalizar a tua experiência.</p>
+        </div>
+
+        <div class="categories-grid">
+            <div class="category-card" onclick="selectCategory('vida-pessoal')">
+                <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80" alt="Vida Pessoal">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="heart" style="width: 20px; color: #f43f5e;"></i>
+                        <h3 style="margin:0;">Vida Pessoal</h3>
+                    </div>
+                    <p>Reflexão, hábitos e bem-estar diário.</p>
+                </div>
             </div>
 
-            <div class="categories-grid">
-                <div class="category-card" onclick="selectCategory('vida-pessoal')">
-                    <i data-lucide="heart"></i>
-                    <h3>Vida Pessoal</h3>
-                    <p>Reflexão, hábitos e bem-estar.</p>
+            <div class="category-card" onclick="selectCategory('aventura')">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" alt="Aventura">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="mountain" style="width: 20px; color: #10b981;"></i>
+                        <h3 style="margin:0;">Aventura</h3>
+                    </div>
+                    <p>Exploração, natureza e adrenalina pura.</p>
                 </div>
+            </div>
 
-                <div class="category-card" onclick="selectCategory('aventura')">
-                    <i data-lucide="mountain"></i>
-                    <h3>Aventura</h3>
-                    <p>Exploração, natureza e adrenalina.</p>
-                </div>
-
-                <div class="category-card" onclick="selectCategory('futuro')">
-                    <i data-lucide="rocket"></i>
-                    <h3>Futuro</h3>
+            <div class="category-card" onclick="selectCategory('futuro')">
+                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" alt="Futuro">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="rocket" style="width: 20px; color: #3b82f6;"></i>
+                        <h3 style="margin:0;">Futuro</h3>
+                    </div>
                     <p>Metas, carreira e visão de longo prazo.</p>
                 </div>
+            </div>
 
-                <div class="category-card" onclick="selectCategory('escola')">
-                    <i data-lucide="graduation-cap"></i>
-                    <h3>Escola & Estudo</h3>
+            <div class="category-card" onclick="selectCategory('escola')">
+                <img src="https://images.unsplash.com/photo-1427504494785-cdaeb5ebaf00?w=800&q=80" alt="Escola">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="graduation-cap" style="width: 20px; color: #f59e0b;"></i>
+                        <h3 style="margin:0;">Escola & Estudo</h3>
+                    </div>
                     <p>Revisões, novas skills e foco acadêmico.</p>
                 </div>
+            </div>
 
-                <div class="category-card" onclick="selectCategory('criatividade')">
-                    <i data-lucide="palette"></i>
-                    <h3>Criatividade</h3>
-                    <p>Arte, música, escrita e design.</p>
+            <div class="category-card" onclick="selectCategory('criatividade')">
+                <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80" alt="Criatividade">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="palette" style="width: 20px; color: #8b5cf6;"></i>
+                        <h3 style="margin:0;">Criatividade</h3>
+                    </div>
+                    <p>Arte, música, escrita e design disruptivo.</p>
                 </div>
+            </div>
 
-                <div class="category-card" onclick="selectCategory('empreendedorismo')">
-                    <i data-lucide="briefcase"></i>
-                    <h3>Negócios</h3>
-                    <p>Validar ideias e criar o teu micro-saas.</p>
+            <div class="category-card" onclick="selectCategory('empreendedorismo')">
+                <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80" alt="Negócios">
+                <div class="category-overlay">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                        <i data-lucide="briefcase" style="width: 20px; color: #ec4899;"></i>
+                        <h3 style="margin:0;">Negócios</h3>
+                    </div>
+                    <p>Validar ideias e criar o teu império digital.</p>
                 </div>
             </div>
         </div>
     </main>
-
-    <footer>
-        <div class="footer-links">
-            <a href="terms.html">Termos de Serviços</a>
-            <a href="about.html">Sobre</a>
-            <a href="privacy.html">Privacidade</a>
-            <a href="help.html">Ajuda</a>
-        </div>
-        <p style="font-size: 0.9rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
         function selectCategory(cat) {
             sessionStorage.setItem('selected_category', cat);
-            window.location.href = 'questions.html';
+            gsap.to('.category-card', { opacity: 0, scale: 0.9, stagger: 0.05, duration: 0.4, onComplete: () => {
+                window.location.href = 'questions.html';
+            }});
         }
+
+        // GSAP Entrance
+        gsap.from('.category-card', { opacity: 0, y: 30, stagger: 0.1, duration: 1, ease: "power4.out" });
+
         lucide.createIcons();
     </script>
 </body>
