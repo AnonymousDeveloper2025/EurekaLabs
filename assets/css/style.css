@@ -90,7 +90,7 @@ textarea {
     padding: 14px 20px;
     background: var(--pill-bg);
     border: 1px solid var(--pill-border);
-    border-radius: 100px; /* Estilo Pill */
+    border-radius: 100px;
     color: white;
     font-size: 1rem;
     outline: none;
@@ -100,36 +100,6 @@ textarea {
 input:focus, textarea:focus {
     border-color: var(--accent-blue);
     background: rgba(255, 255, 255, 0.08);
-}
-
-/* Pill Search Bar Style */
-.search-pill-container {
-    background: var(--pill-bg);
-    border: 1px solid var(--pill-border);
-    border-radius: 100px;
-    padding: 8px 24px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    max-width: 600px;
-    margin: 2rem auto;
-    transition: var(--transition);
-}
-
-.search-pill-container:focus-within {
-    border-color: var(--accent-blue);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
-}
-
-.search-pill-input {
-    background: transparent !important;
-    border: none !important;
-    color: white !important;
-    font-size: 1.1rem !important;
-    width: 100% !important;
-    padding: 0 !important;
 }
 
 /* Buttons Pill */
@@ -173,50 +143,58 @@ input:focus, textarea:focus {
     background: rgba(15, 18, 26, 0.5);
     backdrop-filter: blur(15px);
     border-radius: 32px;
-    padding: 3rem;
+    padding: 2.5rem;
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
-/* Categories Grid */
+/* Categories Grid - ORGANIZADO */
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
     margin-top: 2rem;
+    width: 100%;
 }
 
 .category-card {
     background: var(--secondary-bg);
-    border-radius: 24px;
-    padding: 2rem;
+    border-radius: 28px;
+    padding: 2.5rem;
     border: 1px solid var(--pill-border);
     transition: var(--transition);
     cursor: pointer;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
 }
 
 .category-card:hover {
     border-color: var(--accent-blue);
-    transform: translateY(-5px);
+    transform: translateY(-8px);
     background: rgba(59, 130, 246, 0.05);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
 }
 
 .category-card i {
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: var(--accent-blue);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     display: block;
 }
 
 .category-card h3 {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
     color: white;
+    font-weight: 600;
 }
 
 .category-card p {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-dim);
 }
 
@@ -230,48 +208,16 @@ input:focus, textarea:focus {
     animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* Loader style Gemini */
-.loader-container {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--primary-bg);
-    z-index: 9999;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+/* Utils */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 0 80px 0;
 }
 
-.loader-text {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.loader-svg {
-    width: 80px;
-    height: 80px;
-    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.5));
-}
-
-@keyframes drawPath {
-    0% { stroke-dashoffset: 1000; opacity: 0.3; }
-    50% { opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 0.3; }
-}
-
-.loader-svg path {
-    stroke: #8b5cf6;
-    stroke-width: 1.5;
-    fill: none;
-    stroke-dasharray: 1000;
-    animation: drawPath 4s ease-in-out infinite;
+main {
+    min-height: 100vh;
 }
 
 /* Footer */
@@ -279,60 +225,42 @@ footer {
     padding: 4rem 5%;
     text-align: center;
     color: var(--text-dim);
+    border-top: 1px solid var(--pill-border);
+    margin-top: 4rem;
 }
 
 .footer-links {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
     margin-bottom: 1.5rem;
 }
 
 .footer-links a {
     color: var(--text-dim);
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     transition: var(--transition);
 }
 
 .footer-links a:hover { color: white; }
 
-/* Checkbox Modern */
-.checkbox-group {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
+/* Side Menu */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100%;
+    background: var(--secondary-bg);
+    z-index: 2000;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 2.5rem;
+    border-left: 1px solid var(--pill-border);
 }
 
-.checkbox-item {
-    background: var(--pill-bg);
-    border: 1px solid var(--pill-border);
-    padding: 10px 20px;
-    border-radius: 100px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    transition: var(--transition);
-}
-
-.checkbox-item.active {
-    background: white;
-    color: black;
-    border-color: white;
-}
-
-/* Utils */
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 80px 0;
-}
-
-main {
-    min-height: 100vh;
+.side-menu.active {
+    right: 0;
 }
 
 .overlay {
@@ -342,19 +270,11 @@ main {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     z-index: 1500;
+    backdrop-filter: blur(4px);
 }
 
-.side-menu {
-    position: fixed;
-    top: 0;
-    right: -300px;
-    width: 300px;
-    height: 100%;
-    background: var(--secondary-bg);
-    z-index: 2000;
-    transition: 0.3s;
-    padding: 2rem;
-    border-left: 1px solid var(--pill-border);
+.overlay.active {
+    display: block;
 }

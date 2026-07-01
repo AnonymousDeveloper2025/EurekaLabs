@@ -42,15 +42,34 @@ function jsonResponse($success, $message = '', $data = []) {
     ]);
 }
 
-// Conexão à base de dados (MySQLi)
+// Conexão à base de dados (PostgreSQL via PDO)
 function getDBConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    
-    if ($conn->connect_error) {
-        die(json_encode(['success' => false, 'message' => 'Erro na conexão com a BD: ' . $conn->connect_error]));
+    try {
+        if (strpos(DB_HOST, 'postgresql://') === 0 || strpos(DB_HOST, 'postgres://') === 0) {
+            $db = parse_url(DB_HOST);
+            $host = $db['host'];
+            $port = $db['port'] ?? 5432;
+            $dbname = ltrim($db['path'], '/');
+            $user = $db['user'];
+            $pass = $db['pass'];
+        } else {
+            $host = DB_HOST;
+            $port = 5432;
+            $dbname = DB_NAME;
+            $user = DB_USER;
+            $pass = DB_PASS;
+        }
+        
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+        $pdo = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        return $pdo;
+    } catch (PDOException $e) {
+        die(json_encode(['success' => false, 'message' => 'Erro na conexão com a BD: ' . $e->getMessage()]));
     }
-    
-    return $conn;
 }
 
 // API Gemini Call
