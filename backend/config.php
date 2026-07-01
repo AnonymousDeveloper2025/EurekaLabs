@@ -1,109 +1,104 @@
 <?php
-// ============================================
-// CONFIGURAÇÃO DO EUREKA LABS - ELITE VERSION
-// ============================================
+session_start();
 
-// Base de Dados (PostgreSQL)
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: 'password');
-define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
-
-// API Gemini 1.5 Flash (Melhor resolução e velocidade)
-define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent');
-
-// Frontend URL - CORS
+// 1. CORS: Libera teu front do GitHub + Great-Site
 $allowed_origins = [
     'https://anonymousdeveloper2025.github.io',
-    'http://eurekalabs.great-site.net',
-    'https://eurekalabs.great-site.net'
+    'https://eurekalabs.great-site.net',
+    'http://eurekalabs.great-site.net'
 ];
 
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: $origin");
-} else {
-    header("Access-Control-Allow-Origin: https://anonymousdeveloper2025.github.io");
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+    header("Access-Control-Allow-Origin: ". $_SERVER['HTTP_ORIGIN']);
+    header('Access-Control-Allow-Credentials: true');
 }
 
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Credentials: true');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+// Responde o preflight OPTIONS e para aqui
+if ($_SERVER['REQUEST_METHOD']=== 'OPTIONS') {
     http_response_code(200);
-    exit;
+    exit();
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=UTF-8');
 
-// Conexão à base de dados (PostgreSQL via PDO)
+// 2. Conexão DB - Render usa variáveis de ambiente
 function getDBConnection() {
+    $host = $_ENV['DB_HOST']?? 'localhost';
+    $db = $_ENV['DB_NAME']?? 'eureka_db';
+    $user = $_ENV['DB_USER']?? 'root';
+    $pass = $_ENV['DB_PASS']?? '';
+
+    $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
     try {
-        if (strpos(DB_HOST, 'postgresql://') === 0 || strpos(DB_HOST, 'postgres://') === 0) {
-            $db = parse_url(DB_HOST);
-            $host = $db['host'];
-            $port = $db['port'] ?? 5432;
-            $dbname = ltrim($db['path'], '/');
-            $user = $db['user'];
-            $pass = $db['pass'];
-        } else {
-            $host = DB_HOST;
-            $port = 5432;
-            $dbname = DB_NAME;
-            $user = DB_USER;
-            $pass = DB_PASS;
-        }
-        
-        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
-        $pdo = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-        return $pdo;
+        return new PDO($dsn, $user, $pass, $options);
     } catch (PDOException $e) {
-        die(json_encode(['success' => false, 'message' => 'Erro na conexão com a BD: ' . $e->getMessage()]));
+        echo json_encode(['success' => false, 'message' => 'Erro DB: '. $e->getMessage()]);
+        exit();
     }
 }
 
-// API Gemini Call (v1.5 Flash)
+// 3. Auth Helpers - Igual ao teu register.php
+function isValidEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+function hashPassword($password) {
+    return password_hash($password, PASSWORD_BCRYPT);
+}
+
+function generateToken($userId) {
+    return bin2hex(random_bytes(32))."_".$userId; // Simples. Depois troca por JWT
+}
+
+// 4. Gemini API - MODELO ATUALIZADO: gemini-2.0-flash = Mais rápido e grátis
 function callGeminiAPI($prompt) {
-    $url = GEMINI_API_URL . '?key=' . GEMINI_API_KEY;
-    $data = [
-        'contents' => [['parts' => [['text' => $prompt]]]]
+    $apiKey = $_ENV['GEMINI_API_KEY']?? ''; // Pega do Render > Environment
+
+    if (empty($apiKey)) {
+        return ['error' => 'GEMINI_API_KEY não definida no Render'];
+    }
+
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=". $apiKey;
+
+    $payload = [
+        "contents" => [
+            ["role" => "user", "parts" => [["text" => $prompt]]]
+        ],
+        "generationConfig" => [
+            "temperature" => 0.7,
+            "maxOutputTokens" => 8192
+        ]
     ];
 
     $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-        CURLOPT_POSTFIELDS => json_encode($data),
-        CURLOPT_TIMEOUT => 45 // Render timeout safe
-    ]);
-    
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 45); // 45s pq o Render é lento
+
     $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        return ['error' => 'CURL: '. curl_error($ch)];
+    }
+
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    return json_decode($response, true);
-}
 
-// JWT Secret
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'your_super_secret_key_change_this');
+    $decoded = json_decode($response, true);
+    if ($http_code!== 200 && isset($decoded['error'])) {
+        return ['error' => $decoded['error']['message']?? 'Erro HTTP '. $http_code];
+    }
 
-// Auth Helpers
-function isValidEmail($email) { return filter_var($email, FILTER_VALIDATE_EMAIL); }
-function hashPassword($password) { return password_hash($password, PASSWORD_BCRYPT); }
-function verifyPassword($password, $hash) { return password_verify($password, $hash); }
-function generateToken($userId) {
-    $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
-    $payload = json_encode(['userId' => $userId, 'iat' => time()]);
-    $hE = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
-    $pE = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
-    $sig = hash_hmac('sha256', "$hE.$pE", JWT_SECRET, true);
-    $sE = rtrim(strtr(base64_encode($sig), '+/', '-_'), '=');
-    return "$hE.$pE.$sE";
+    return $decoded;
 }
 ?>
