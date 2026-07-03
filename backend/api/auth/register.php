@@ -1,7 +1,10 @@
 <?php
+/**
+ * REGISTER - EUREKA LABS ELITE
+ */
+
 require_once '../../config.php';
 
-// Headers já estão no config.php, mas reforçamos se necessário
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -15,19 +18,19 @@ $name = trim($input['name'] ?? '');
 $email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
 
-// Validações Essenciais
+// Validações
 if (empty($name) || empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'message' => 'Todos os campos são obrigatórios']);
+    echo json_encode(['success' => false, 'message' => 'Preenche todos os campos obrigatórios.']);
     exit;
 }
 
 if (!isValidEmail($email)) {
-    echo json_encode(['success' => false, 'message' => 'Email inválido']);
+    echo json_encode(['success' => false, 'message' => 'O formato do email não é válido.']);
     exit;
 }
 
 if (strlen($password) < 6) {
-    echo json_encode(['success' => false, 'message' => 'Palavra-passe deve ter pelo menos 6 caracteres']);
+    echo json_encode(['success' => false, 'message' => 'A palavra-passe deve ter pelo menos 6 caracteres.']);
     exit;
 }
 
@@ -39,7 +42,7 @@ try {
     $stmt->execute([$email]);
     
     if ($stmt->fetch()) {
-        echo json_encode(['success' => false, 'message' => 'Este email já está registado']);
+        echo json_encode(['success' => false, 'message' => 'Este email já se encontra registado no Eureka Labs.']);
         exit;
     }
 
@@ -53,7 +56,7 @@ try {
         
         echo json_encode([
             'success' => true,
-            'message' => 'Registo realizado com sucesso',
+            'message' => 'Bem-vindo ao Eureka Labs!',
             'user' => [
                 'id' => $userId,
                 'name' => $name,
@@ -62,10 +65,11 @@ try {
             'token' => $token
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Erro ao registar utilizador']);
+        echo json_encode(['success' => false, 'message' => 'Erro ao criar conta. Tenta novamente.']);
     }
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Erro no servidor: ' . $e->getMessage()]);
+    error_log("Erro Register: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Erro no servidor ao processar o registo.']);
 }
 ?>

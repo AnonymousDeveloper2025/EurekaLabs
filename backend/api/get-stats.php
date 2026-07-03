@@ -1,46 +1,37 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Credentials: true');
+/**
+ * GET STATS - EUREKA LABS ELITE
+ */
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
 require_once '../config.php';
+
+// Headers CORS já definidos no config.php
 
 header('Content-Type: application/json');
 
 $userId = $_GET['userId'] ?? null;
 
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
+    echo json_encode(['success' => false, 'message' => 'Utilizador não especificado']);
     exit;
 }
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
+    
+    // Contar ideias
+    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM ideas WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $ideasCount = $stmt->fetch()['total'];
 
-// Contar ideias
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM ideas WHERE user_id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
-$ideasCount = $result->fetch_assoc()['count'];
+    echo json_encode([
+        'success' => true,
+        'ideas_count' => (int)$ideasCount,
+        'pdfs_count' => 0 
+    ]);
 
-// Contar PDFs gerados
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM ideas WHERE user_id = ? AND pdf_generated = 1");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
-$pdfsCount = $result->fetch_assoc()['count'];
-
-echo json_encode([
-    'success' => true,
-    'ideas_count' => $ideasCount,
-    'pdfs_count' => $pdfsCount
-]);
-
-$stmt->close();
-$conn->close();
+} catch (Exception $e) {
+    error_log("Erro Stats: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Erro ao carregar estatísticas']);
+}
 ?>

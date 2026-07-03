@@ -1,13 +1,8 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Credentials: true');
+/**
+ * GET INVENTORY - EUREKA LABS ELITE
+ */
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
 require_once '../config.php';
 
 header('Content-Type: application/json');
@@ -15,27 +10,24 @@ header('Content-Type: application/json');
 $userId = $_GET['userId'] ?? null;
 
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
+    echo json_encode(['success' => false, 'message' => 'Utilizador não autenticado']);
     exit;
 }
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
+    
+    $stmt = $conn->prepare("SELECT id, category, title, content, created_at FROM ideas WHERE user_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$userId]);
+    $ideas = $stmt->fetchAll();
 
-$stmt = $conn->prepare("SELECT id, title, content, category, created_at, pdf_generated FROM ideas WHERE user_id = ? AND saved = 1 ORDER BY created_at DESC");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
+    echo json_encode([
+        'success' => true,
+        'inventory' => $ideas
+    ]);
 
-$ideas = [];
-while ($row = $result->fetch_assoc()) {
-    $ideas[] = $row;
+} catch (Exception $e) {
+    error_log("Erro Inventory: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Erro ao carregar o inventário']);
 }
-
-echo json_encode([
-    'success' => true,
-    'ideas' => $ideas
-]);
-
-$stmt->close();
-$conn->close();
 ?>

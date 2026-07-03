@@ -1,16 +1,15 @@
 <?php
+/**
+ * GENERATE IDEA - EUREKA LABS ELITE
+ * Refatorado profissionalmente para usar o Proxy do Manus.
+ */
+
 require_once '../../config.php';
 
-// Headers CORS já definidos no config.php, mas reforçamos aqui para segurança extra
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowed = ['https://anonymousdeveloper2025.github.io', 'http://eurekalabs.great-site.net', 'https://eurekalabs.great-site.net'];
-
-if (in_array($origin, $allowed)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
-
+// A resposta é sempre JSON
 header('Content-Type: application/json');
 
+// Receber dados do front-end
 $input = json_decode(file_get_contents('php://input'), true);
 
 $userId = $input['user_id'] ?? null;
@@ -19,35 +18,54 @@ $mode = $input['mode'] ?? 'simple';
 $category = $input['category'] ?? 'Geral';
 $answers = $input['answers'] ?? [];
 
+// 1. Validação de Autenticação
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não autenticado']);
+    echo json_encode(['success' => false, 'message' => 'Sessão expirada. Por favor, faz login novamente.']);
     exit;
 }
 
-$answersText = !empty($answers) ? "Preferências: " . implode(', ', $answers) : "";
+// 2. Construção do Prompt Profissional
+$answersText = !empty($answers) ? "Preferências do utilizador: " . implode(', ', $answers) : "";
 
-$systemPersona = "Tu és o IDEFY, assistente de elite do Eureka Labs. 
-Responde APENAS com HTML e CSS inline. 
-Design: Modern Dark, Glassmorphism, Cores #3b82f6 e #8b5cf6. 
-Inclui animações fade-in e tabelas se for plano completo.";
+$systemPersona = "Tu és o IDEFY, o assistente de inteligência artificial de elite do Eureka Labs. 
+A tua missão é transformar uma ideia básica numa experiência visual deslumbrante.
 
-$prompt = "$systemPersona TAREFA: Gera um " . ($mode === 'full' ? "PLANO COMPLETO" : "IDEIA SIMPLES") . " sobre: '$topic'. $answersText";
+FORMATO OBRIGATÓRIO:
+- Responde APENAS com código HTML e CSS inline (dentro de uma div contentora).
+- NÃO uses blocos de código markdown (```html).
+- Usa um design Modern Dark com Glassmorphism.
+- Cores principais: Azul (#3b82f6), Roxo (#8b5cf6), Branco (#ffffff).
+- Inclui animações CSS fade-in e ícones (usa emojis ou SVG simples).
+- Se o modo for 'full', cria um cronograma detalhado em tabela.
 
+CONTEÚDO:";
+
+if ($mode === 'full') {
+    $prompt = "$systemPersona Gera um PLANO COMPLETO E DETALHADO sobre: '$topic'. $answersText. Inclui introdução, passos práticos, cronograma e dicas de expert.";
+} else {
+    $prompt = "$systemPersona Gera uma IDEIA SIMPLES E IMPACTANTE sobre: '$topic'. $answersText. Foca na criatividade e rapidez de execução.";
+}
+
+// 3. Chamada à API (via Proxy Manus)
 $response = callGeminiAPI($prompt);
 
-if (!isset($response['candidates'][0]['content']['parts'][0]['text'])) {
-    echo json_encode(['success' => false, 'message' => 'Erro ao processar com o IDEFY.']);
+if (!$response || !isset($response['choices'][0]['message']['content'])) {
+    echo json_encode(['success' => false, 'message' => 'O IDEFY está momentaneamente indisponível. Tenta novamente em segundos.']);
     exit;
 }
 
-$htmlContent = $response['candidates'][0]['content']['parts'][0]['text'];
+$htmlContent = $response['choices'][0]['message']['content'];
+
+// Limpeza de tags markdown se a IA insistir nelas
 $htmlContent = preg_replace('/^```html\s*|```$/i', '', trim($htmlContent));
 
+// 4. Extração do Título
 $title = "Ideia para " . $topic;
 if (preg_match('/<h[1-2][^>]*>(.*?)<\/h[1-2]>/i', $htmlContent, $matches)) {
     $title = strip_tags($matches[1]);
 }
 
+// 5. Persistência na Base de Dados (PostgreSQL)
 try {
     $conn = getDBConnection();
     $stmt = $conn->prepare("INSERT INTO ideas (user_id, category, title, content, created_at) VALUES (?, ?, ?, ?, NOW())");
@@ -63,9 +81,10 @@ try {
             ]
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Erro ao guardar no inventário']);
+        echo json_encode(['success' => false, 'message' => 'Não foi possível guardar a tua ideia no inventário.']);
     }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Erro no servidor: ' . $e->getMessage()]);
+    error_log("Erro SQL generate-idea: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Erro interno ao processar a ideia.']);
 }
 ?>

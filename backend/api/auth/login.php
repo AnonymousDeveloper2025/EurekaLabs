@@ -1,4 +1,8 @@
 <?php
+/**
+ * LOGIN - EUREKA LABS ELITE
+ */
+
 require_once '../../config.php';
 
 header('Content-Type: application/json');
@@ -14,38 +18,36 @@ $email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
 
 if (empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'message' => 'Email e palavra-passe são obrigatórios']);
+    echo json_encode(['success' => false, 'message' => 'Preenche o email e a palavra-passe.']);
     exit;
 }
 
 try {
     $conn = getDBConnection();
-
-    // Procurar utilizador
+    
     $stmt = $conn->prepare("SELECT id, name, email, password FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    if (!$user || !verifyPassword($password, $user['password'])) {
-        echo json_encode(['success' => false, 'message' => 'Email ou palavra-passe incorretos']);
-        exit;
+    if ($user && verifyPassword($password, $user['password'])) {
+        $token = generateToken($user['id']);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Bem-vindo de volta!',
+            'user' => [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email']
+            ],
+            'token' => $token
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Credenciais inválidas.']);
     }
 
-    // Gerar token
-    $token = generateToken($user['id']);
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login realizado com sucesso',
-        'user' => [
-            'id' => $user['id'],
-            'name' => $user['name'],
-            'email' => $user['email']
-        ],
-        'token' => $token
-    ]);
-
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Erro no servidor: ' . $e->getMessage()]);
+    error_log("Erro Login: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Erro no servidor ao processar o login.']);
 }
 ?>
