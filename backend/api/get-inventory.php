@@ -10,14 +10,16 @@ header('Content-Type: application/json');
 $userId = $_GET['userId'] ?? null;
 
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não autenticado']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
     exit;
 }
 
 try {
     $conn = getDBConnection();
     
-    $stmt = $conn->prepare("SELECT id, category, title, content, created_at FROM ideas WHERE user_id = ? ORDER BY created_at DESC");
+    // Buscar ideias salvas
+    $stmt = $conn->prepare("SELECT id, title, content, category, created_at FROM ideas WHERE user_id = ? ORDER BY created_at DESC");
     $stmt->execute([$userId]);
     $ideas = $stmt->fetchAll();
 
@@ -28,6 +30,7 @@ try {
 
 } catch (Exception $e) {
     error_log("Erro Inventory: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erro ao carregar o inventário']);
 }
 ?>

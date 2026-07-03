@@ -1,5 +1,5 @@
 // CONFIGURAÇÃO GLOBAL EUREKA LABS ELITE
-const API_BASE_URL = 'https://eureka-labs-backend.onrender.com';
+const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar Partículas (Subtis e Profissionais)

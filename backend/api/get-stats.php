@@ -5,14 +5,13 @@
 
 require_once '../config.php';
 
-// Headers CORS já definidos no config.php
-
 header('Content-Type: application/json');
 
 $userId = $_GET['userId'] ?? null;
 
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não especificado']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
     exit;
 }
 
@@ -27,11 +26,12 @@ try {
     echo json_encode([
         'success' => true,
         'ideas_count' => (int)$ideasCount,
-        'pdfs_count' => 0 
+        'pdfs_count' => 0
     ]);
 
 } catch (Exception $e) {
     error_log("Erro Stats: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erro ao carregar estatísticas']);
 }
 ?>

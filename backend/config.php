@@ -14,32 +14,33 @@ define('MANUS_API_BASE', getenv('OPENAI_API_BASE') ?: 'https://api.manus.im/v1')
 define('MANUS_API_KEY', getenv('OPENAI_API_KEY') ?: '');
 define('MANUS_MODEL', 'gemini-3-flash-preview');
 
-// 3. Middleware de CORS Ultra-Robusto
+// 3. Middleware de CORS Definitivo
+// Capturar a origem do pedido
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+// Lista de domínios permitidos
 $allowed_origins = [
     'https://anonymousdeveloper2025.github.io',
     'http://eurekalabs.great-site.net',
     'https://eurekalabs.great-site.net'
 ];
 
-// Verificação de Origem
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: $origin");
-} else if (strpos($origin, 'github.io') !== false || strpos($origin, 'great-site.net') !== false) {
+// Se for um dos nossos domínios, permitimos explicitamente
+if (in_array($origin, $allowed_origins) || preg_match('/github\.io$/', parse_url($origin, PHP_URL_HOST) ?? '') || preg_match('/great-site\.net$/', parse_url($origin, PHP_URL_HOST) ?? '')) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    header("Access-Control-Allow-Origin: https://anonymousdeveloper2025.github.io");
+    // Fallback para evitar bloqueio total em ambientes de teste
+    header("Access-Control-Allow-Origin: *");
 }
 
-// Headers Necessários para Preflight e Credenciais
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Max-Age: 86400');
+header('Access-Control-Max-Age: 3600');
 
-// Lidar com pedido Preflight (OPTIONS)
+// Lidar com Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+    http_response_code(204);
     exit;
 }
 
@@ -72,7 +73,7 @@ function getDBConnection() {
         ]);
         return $pdo;
     } catch (PDOException $e) {
-        error_log("Erro de Conexão BD: " . $e->getMessage());
+        error_log("Erro BD: " . $e->getMessage());
         header('Content-Type: application/json');
         die(json_encode(['success' => false, 'message' => 'Erro na conexão com a base de dados.']));
     }
