@@ -1,44 +1,47 @@
 <?php
-// ============================================
-// CONFIGURAÇÃO DO EUREKA LABS - MANUS PROXY
-// ============================================
+/**
+ * EUREKA LABS - CONFIGURAÇÃO ELITE & CORS MIDDLEWARE
+ */
 
-// Base de Dados (PostgreSQL via Variáveis de Ambiente)
+// 1. Configurações de Base de Dados (PostgreSQL)
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: 'password');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// API Proxy do Manus (OpenAI Compatible)
+// 2. Configurações da API Manus (Gemini)
 define('MANUS_API_BASE', getenv('OPENAI_API_BASE') ?: 'https://api.manus.im/v1');
 define('MANUS_API_KEY', getenv('OPENAI_API_KEY') ?: '');
-define('MANUS_MODEL', 'gemini-3-flash-preview'); // Modelo de alta performance e baixo custo
+define('MANUS_MODEL', 'gemini-3-flash-preview');
 
-// CORS - Domínios Permitidos
+// 3. Middleware de CORS Ultra-Robusto
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed_origins = [
     'https://anonymousdeveloper2025.github.io',
     'http://eurekalabs.great-site.net',
     'https://eurekalabs.great-site.net'
 ];
 
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
+// Verificação de Origem
 if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else if (strpos($origin, 'github.io') !== false || strpos($origin, 'great-site.net') !== false) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
     header("Access-Control-Allow-Origin: https://anonymousdeveloper2025.github.io");
 }
 
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// Headers Necessários para Preflight e Credenciais
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400');
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+// Lidar com pedido Preflight (OPTIONS)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
-
-header('Content-Type: application/json');
 
 /**
  * Conexão à base de dados PostgreSQL usando PDO
@@ -70,6 +73,7 @@ function getDBConnection() {
         return $pdo;
     } catch (PDOException $e) {
         error_log("Erro de Conexão BD: " . $e->getMessage());
+        header('Content-Type: application/json');
         die(json_encode(['success' => false, 'message' => 'Erro na conexão com a base de dados.']));
     }
 }
@@ -85,7 +89,7 @@ function callGeminiAPI($prompt) {
         'messages' => [
             ['role' => 'user', 'content' => $prompt]
         ],
-        'max_tokens' => 4000 // Importante para Gemini no Proxy Manus
+        'max_tokens' => 4000
     ];
 
     $ch = curl_init($url);
