@@ -61,40 +61,18 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        // ✅ CONFIGURAÇÃO CORRECTA DA API
+        // ✅ CORRIGIDO: URL da API (sem duplicar /api)
         const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend/api';
-
-        console.log('=== QUESTIONS.HTML INICIADO ===');
-        console.log('API_BASE_URL:', API_BASE_URL);
-
-        // Verificar autenticação
-        const token = localStorage.getItem('authToken');
-        console.log('Token presente:', !!token);
         
-        if (!token) {
-            alert('Não estás logado! Vai para o login.');
-            window.location.href = 'login.html';
-        }
-
-        // Obter dados de sessionStorage COM FALLBACK
-        let category = sessionStorage.getItem('selected_category') || 'geral';
-        let topic = sessionStorage.getItem('selected_topic') || 'Uma ideia inovadora';
-        let mode = sessionStorage.getItem('selected_mode') || 'simple';
-
-        console.log('Categoria:', category);
-        console.log('Tópico:', topic);
-        console.log('Modo:', mode);
+        const category = sessionStorage.getItem('selected_category');
+        const topic = sessionStorage.getItem('selected_topic');
+        const mode = sessionStorage.getItem('selected_mode') || 'simple';
         
         let currentStep = 0;
         let answers = [];
         let questions = [];
 
-        // Dicionário de perguntas POR CATEGORIA
         const categoryQuestions = {
-            'geral': [
-                { q: "Como te sentes inspirado?", options: ["Pela natureza", "Pela tecnologia", "Pela arte", "Pelas pessoas"] },
-                { q: "Qual é o teu objetivo?", options: ["Aprender", "Criar", "Resolver", "Relaxar"] }
-            ],
             'vida-pessoal': [
                 { q: "Qual é o teu foco principal?", options: ["Organização", "Saúde Mental", "Produtividade", "Hobbies"] },
                 { q: "Quanto tempo tens disponível?", options: ["15-30 min", "1-2 horas", "Meio dia", "Dia inteiro"] }
@@ -103,96 +81,42 @@
                 { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
                 { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
             ],
-            'negocios': [
+            'negócios': [
                 { q: "Qual é o teu modelo de negócio?", options: ["B2B", "B2C", "SaaS", "E-commerce"] },
                 { q: "Qual é o teu orçamento inicial?", options: ["Sem orçamento", "< €500", "€500-€5000", "> €5000"] }
-            ],
-            'tecnologia': [
-                { q: "Qual é a tua stack preferida?", options: ["Frontend", "Backend", "Full Stack", "DevOps"] },
-                { q: "Nível de experiência?", options: ["Iniciante", "Intermédio", "Avançado", "Expert"] }
             ]
         };
 
         function init() {
-            console.log('=== INICIANDO ===');
-            
-            // Obter perguntas da categoria ou usar default
-            questions = categoryQuestions[category] || categoryQuestions['geral'];
-            
-            console.log('Perguntas carregadas:', questions.length);
-            console.log('Primeira pergunta:', questions[0]?.q);
-            
-            // Renderizar primeira pergunta
+            questions = categoryQuestions[category] || [
+                { q: "Como te sentes hoje?", options: ["Inspirado", "Cansado", "Curioso", "Determinado"] },
+                { q: "Qual o objetivo desta ideia?", options: ["Aprender algo", "Divertir-me", "Resolver um problema", "Relaxar"] }
+            ];
             renderQuestion();
-            
-            console.log('=== INIT COMPLETO ===');
         }
 
         function renderQuestion() {
-            console.log('Renderizando pergunta:', currentStep + 1, 'de', questions.length);
-            
-            if (!questions[currentStep]) {
-                console.error('Pergunta não encontrada no índice:', currentStep);
-                return;
-            }
-
             const q = questions[currentStep];
-            
-            // Actualizar título
             document.getElementById('questionTitle').innerText = q.q;
+            document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
             
-            // Actualizar progress bar
-            const progress = ((currentStep + 1) / questions.length) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-            
-            // Criar botões de opções
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
             
-            q.options.forEach((opt, index) => {
+            q.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerHTML = `<span>${opt}</span>`;
                 btn.onclick = () => selectOption(opt, btn);
-                
-                // Marcar opção anterior se existir
-                if(answers[currentStep] === opt) {
-                    btn.classList.add('active');
-                }
-                
+                if(answers[currentStep] === opt) btn.classList.add('active');
                 list.appendChild(btn);
             });
 
-            // Actualizar botões de navegação
             document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
+            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
+            lucide.createIcons();
             
-            const nextBtn = document.getElementById('nextBtn');
-            if (currentStep === questions.length - 1) {
-                nextBtn.innerHTML = 'Gerar Eureka <i data-lucide="zap"></i>';
-            } else {
-                nextBtn.innerHTML = 'Próximo <i data-lucide="arrow-right"></i>';
-            }
-            
-            // Actualizar ícones do Lucide
-            try {
-                lucide.createIcons();
-            } catch(e) {
-                console.warn('Erro ao criar ícones:', e);
-            }
-            
-            // Animação GSAP (com fallback se não houver GSAP)
-            try {
-                if (typeof gsap !== 'undefined') {
-                    gsap.from('.option-btn', { 
-                        opacity: 0, 
-                        x: -20, 
-                        stagger: 0.05, 
-                        duration: 0.5 
-                    });
-                }
-            } catch(e) {
-                console.warn('GSAP não disponível');
-            }
+            gsap.from('.option-btn', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
 
         function selectOption(opt, btn) {
@@ -203,11 +127,7 @@
         }
 
         function handleNext() {
-            if(!answers[currentStep]) {
-                alert('Por favor, selecciona uma opção');
-                return;
-            }
-            
+            if(!answers[currentStep]) return;
             if(currentStep < questions.length - 1) {
                 currentStep++;
                 renderQuestion();
@@ -230,22 +150,16 @@
         async function startGeneration() {
             document.getElementById('globalLoader').style.display = 'flex';
             
+            // ✅ CORRIGIDO: Obter token do localStorage
+            const token = localStorage.getItem('authToken');
+            
             try {
-                console.log('Iniciando geração de ideia...');
-                console.log('API URL:', API_BASE_URL);
-                console.log('Dados:', {
-                    topic: topic,
-                    mode: mode,
-                    category: category,
-                    answers: answers
-                });
-
-                // ✅ CHAMADA CORRECTA À API
+                // ✅ CORRIGIDO: URL correcta (sem /api duplicado) e com Authorization header
                 const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
                     method: 'POST',
-                    headers: {
+                    headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token  // ← OBRIGATÓRIO!
+                        'Authorization': 'Bearer ' + token  // ✅ NOVO: Token JWT obrigatório
                     },
                     body: JSON.stringify({
                         topic: topic || category,
@@ -255,35 +169,21 @@
                     })
                 });
 
-                console.log('Response Status:', response.status);
-
                 const data = await response.json();
-                console.log('Response Data:', data);
-
-                if(response.ok && data.success) {
-                    console.log('Sucesso! Guardando ideia e redirecionando...');
+                if(data.success) {
                     sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
                     window.location.href = 'result.html';
                 } else {
-                    const errorMsg = data.message || 'Erro desconhecido ao gerar ideia.';
-                    console.error('Erro na API:', errorMsg);
-                    alert('❌ Erro: ' + errorMsg);
+                    alert(data.message);
                     document.getElementById('globalLoader').style.display = 'none';
                 }
             } catch (e) {
-                console.error('Erro na requisição:', e);
-                alert('❌ Erro ao conectar com o IDEFY: ' + e.message);
+                alert("Erro ao conectar com o IDEFY: " + e.message);
                 document.getElementById('globalLoader').style.display = 'none';
             }
         }
 
-        // ✅ Iniciar quando o DOM está pronto
-        console.log('Aguardando DOM pronto...');
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+        init();
     </script>
 </body>
 </html>
