@@ -1,7 +1,7 @@
 <?php
 /**
- * EUREKA LABS - CONFIGURAÇÃO ELITE & CORS MIDDLEWARE
- * Versão: 2.0 - Com Gemini API Direct (não Manus)
+ * EUREKA LABS - CONFIGURAÇÃO FINAL
+ * Versão: 3.0 - Com Gemini 2.5 Flash (FUNCIONA!)
  */
 
 // 1. Configurações de Base de Dados (PostgreSQL)
@@ -13,24 +13,21 @@ define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 // 2. Configurações da API Gemini (Google - DIRECTAMENTE)
 define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
 define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
-define('GEMINI_MODEL', 'gemini-1.5-flash');
+// ✅ MODELO CONFIRMADO QUE FUNCIONA:
+define('GEMINI_MODEL', 'gemini-2.5-flash');
 
-// 3. Middleware de CORS Definitivo
-// Capturar a origem do pedido
+// 3. Middleware de CORS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-// Lista de domínios permitidos
 $allowed_origins = [
     'https://anonymousdeveloper2025.github.io',
     'http://eurekalabs.great-site.net',
     'https://eurekalabs.great-site.net'
 ];
 
-// Se for um dos nossos domínios, permitimos explicitamente
 if (in_array($origin, $allowed_origins) || preg_match('/github\.io$/', parse_url($origin, PHP_URL_HOST) ?? '') || preg_match('/great-site\.net$/', parse_url($origin, PHP_URL_HOST) ?? '')) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    // Fallback para evitar bloqueio total em ambientes de teste
     header("Access-Control-Allow-Origin: *");
 }
 
@@ -39,7 +36,6 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Max-Age: 3600');
 
-// Lidar com Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
@@ -82,7 +78,6 @@ function getDBConnection() {
 
 /**
  * Chamada à API Gemini (Google - DIRECTAMENTE)
- * Sem proxy Manus
  */
 function callGeminiAPI($prompt) {
     $apiKey = GEMINI_API_KEY;
@@ -92,7 +87,7 @@ function callGeminiAPI($prompt) {
         return null;
     }
     
-    // Endpoint do Gemini
+    // Endpoint do Gemini com modelo que FUNCIONA
     $url = GEMINI_API_BASE . '/' . GEMINI_MODEL . ':generateContent?key=' . urlencode($apiKey);
     
     $data = [
@@ -142,15 +137,13 @@ function callGeminiAPI($prompt) {
     
     $responseData = json_decode($response, true);
     
-    // Gemini retorna formato diferente:
-    // { "candidates": [ { "content": { "parts": [ { "text": "..." } ] } } ] }
-    
+    // Gemini retorna formato: { "candidates": [ { "content": { "parts": [ { "text": "..." } ] } } ] }
     if (!$responseData || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
         error_log("Resposta Gemini inválida: " . json_encode($responseData));
         return null;
     }
     
-    // Converter para formato compatível com código existente
+    // Converter para formato compatível
     return [
         'choices' => [
             [
