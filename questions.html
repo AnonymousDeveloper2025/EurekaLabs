@@ -61,6 +61,16 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
+        // ✅ CONFIGURAÇÃO CORRECTA DA API
+        const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend/api';
+
+        // Verificar autenticação
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Não estás logado! Vai para o login.');
+            window.location.href = 'login.html';
+        }
+
         const category = sessionStorage.getItem('selected_category');
         const topic = sessionStorage.getItem('selected_topic');
         const mode = sessionStorage.getItem('selected_mode') || 'simple';
@@ -77,8 +87,11 @@
             'aventura': [
                 { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
                 { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
+            ],
+            'negócios': [
+                { q: "Qual é o teu modelo de negócio?", options: ["B2B", "B2C", "SaaS", "E-commerce"] },
+                { q: "Qual é o teu orçamento inicial?", options: ["Sem orçamento", "< €500", "€500-€5000", "> €5000"] }
             ]
-            // Adicionar mais conforme necessário
         };
 
         function init() {
@@ -143,14 +156,16 @@
 
         async function startGeneration() {
             document.getElementById('globalLoader').style.display = 'flex';
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
+                // ✅ CHAMADA CORRECTA À API
+                const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token  // ← OBRIGATÓRIO!
+                    },
                     body: JSON.stringify({
-                        user_id: user?.id,
                         topic: topic || category,
                         mode: mode,
                         category: category,
@@ -158,16 +173,21 @@
                     })
                 });
 
+                console.log('Response Status:', response.status);
+
                 const data = await response.json();
-                if(data.success) {
+                console.log('Response Data:', data);
+
+                if(response.ok && data.success) {
                     sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
                     window.location.href = 'result.html';
                 } else {
-                    alert(data.message);
+                    alert('❌ Erro: ' + (data.message || 'Erro desconhecido ao gerar ideia.'));
                     document.getElementById('globalLoader').style.display = 'none';
                 }
             } catch (e) {
-                alert("Erro ao conectar com o IDEFY.");
+                console.error('Erro na requisição:', e);
+                alert('❌ Erro ao conectar com o IDEFY: ' + e.message);
                 document.getElementById('globalLoader').style.display = 'none';
             }
         }
@@ -175,4 +195,4 @@
         init();
     </script>
 </body>
-</html>
+        </html>
