@@ -29,14 +29,14 @@
 
                 <p style="color: var(--accent-blue); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Assistente IDEFY</p>
                 <h1 id="questionTitle" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2.5rem; line-height: 1.3;">A carregar perguntas...</h1>
-                
+
                 <div id="optionsList"></div>
 
                 <div style="display: flex; justify-content: space-between; margin-top: 3rem; align-items: center;">
                     <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden; padding: 12px 25px;">
                         <i data-lucide="arrow-left"></i>
                     </button>
-                    
+
                     <button class="btn btn-outline" onclick="skipToGenerate()" style="font-size: 0.85rem; border-color: transparent;">
                         Pular e gerar agora
                     </button>
@@ -63,11 +63,11 @@
     <script>
         // ✅ CORRIGIDO: URL da API (sem duplicar /api)
         const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend/api';
-        
+
         const category = sessionStorage.getItem('selected_category');
         const topic = sessionStorage.getItem('selected_topic');
         const mode = sessionStorage.getItem('selected_mode') || 'simple';
-        
+
         let currentStep = 0;
         let answers = [];
         let questions = [];
@@ -99,10 +99,10 @@
             const q = questions[currentStep];
             document.getElementById('questionTitle').innerText = q.q;
             document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
-            
+
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
-            
+
             q.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
@@ -112,10 +112,10 @@
                 list.appendChild(btn);
             });
 
-            document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
-            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
+            document.getElementById('prevBtn').style.visibility = currentStep > 0? 'visible' : 'hidden';
+            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
             lucide.createIcons();
-            
+
             gsap.from('.option-btn', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
 
@@ -144,22 +144,27 @@
         }
 
         function skipToGenerate() {
+            // ✅ NOVO: Preenche todas as perguntas com respostas aleatórias
+            answers = questions.map(q => {
+                const randomIndex = Math.floor(Math.random() * q.options.length);
+                return q.options[randomIndex];
+            });
             startGeneration();
         }
 
         async function startGeneration() {
             document.getElementById('globalLoader').style.display = 'flex';
-            
+
             // ✅ CORRIGIDO: Obter token do localStorage
             const token = localStorage.getItem('authToken');
-            
+
             try {
                 // ✅ CORRIGIDO: URL correcta (sem /api duplicado) e com Authorization header
                 const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token  // ✅ NOVO: Token JWT obrigatório
+                        'Authorization': 'Bearer ' + token // ✅ NOVO: Token JWT obrigatório
                     },
                     body: JSON.stringify({
                         topic: topic || category,
