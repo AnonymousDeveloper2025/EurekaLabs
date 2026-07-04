@@ -1,32 +1,25 @@
 <?php
 /**
- * TEST GEMINI API CONNECTION
- * Usa isto para testar se a API Gemini está a funcionar
- * 
- * Acesso: https://teu-dominio/backend/test-gemini.php
+ * FINAL TEST - Gemini 2.5 Flash
+ * Testa se a API Gemini 2.5 Flash funciona correctamente
  */
 
 header('Content-Type: application/json');
 
-// Simular as definições
-$geminiApiKey = getenv('GEMINI_API_KEY') ?: 'AQ.Ab8RN6KcD3HUnIaGSuZr7Dtd7XRya2bzL1MW3mgsEznRYXH0jg';
-$geminiApiBase = 'https://generativelanguage.googleapis.com/v1beta/models';
-$geminiModel = 'gemini-1.5-flash';
+$geminiApiKey = getenv('GEMINI_API_KEY') ?: '';
 
-// Verificar se temos a chave
 if (empty($geminiApiKey)) {
     http_response_code(400);
     die(json_encode([
         'success' => false,
-        'message' => 'GEMINI_API_KEY não está configurada!',
-        'hint' => 'Adiciona no Render → Settings → Environment Variables'
+        'message' => 'GEMINI_API_KEY não configurada'
     ]));
 }
 
-// Fazer teste simples
-$testPrompt = "Responde em português com um parágrafo curto: O que é o Eureka Labs?";
+$model = 'gemini-2.5-flash';
+$url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($geminiApiKey);
 
-$url = $geminiApiBase . '/' . $geminiModel . ':generateContent?key=' . urlencode($geminiApiKey);
+$testPrompt = "Responde em português com um parágrafo curto: O que é o Eureka Labs?";
 
 $data = [
     'contents' => [
@@ -41,6 +34,8 @@ $data = [
         'temperature' => 0.7
     ]
 ];
+
+echo "🧪 Testando Gemini 2.5 Flash...\n\n";
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [
@@ -63,18 +58,22 @@ if ($httpCode === 200) {
         http_response_code(200);
         echo json_encode([
             'success' => true,
-            'message' => '✅ Gemini API está a funcionar!',
+            'message' => '✅✅✅ GEMINI 2.5 FLASH FUNCIONA PERFEITAMENTE!',
+            'model' => 'gemini-2.5-flash',
             'test_response' => $responseData['candidates'][0]['content']['parts'][0]['text'],
-            'model' => $geminiModel,
-            'api_base' => $geminiApiBase
-        ]);
+            'instructions' => [
+                'Usar config_FINAL_FUNCIONAL.php como backend/config.php',
+                'O modelo gemini-2.5-flash está confirmado',
+                'A API Gemini está a funcionar corretamente'
+            ]
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     } else {
         http_response_code(500);
         echo json_encode([
             'success' => false,
             'message' => 'Resposta Gemini inválida',
             'raw_response' => $responseData
-        ]);
+        ], JSON_PRETTY_PRINT);
     }
 } else {
     http_response_code($httpCode);
@@ -82,13 +81,7 @@ if ($httpCode === 200) {
         'success' => false,
         'message' => "Erro na API Gemini (HTTP $httpCode)",
         'error' => $curlError ?: 'Sem detalhes',
-        'raw_response' => $response,
-        'debug_info' => [
-            'url' => $url,
-            'model' => $geminiModel,
-            'api_key_present' => !empty($geminiApiKey),
-            'api_key_length' => strlen($geminiApiKey) . ' caracteres'
-        ]
-    ]);
+        'raw_response' => $response
+    ], JSON_PRETTY_PRINT);
 }
 ?>
