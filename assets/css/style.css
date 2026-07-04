@@ -86,12 +86,53 @@ header {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* SIDE MENU & OVERLAY (NOVO) */
+.side-menu {
+    position: fixed;
+    left: -350px;
+    top: 0;
+    width: 350px;
+    height: 100vh;
+    background: var(--secondary-bg);
+    border-right: 1px solid var(--glass-border);
+    padding: 2rem;
+    z-index: 999;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+}
+
+.side-menu.active {
+    left: 0;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 500;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Cards & Containers */
 .container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 140px 0 80px 0;
+}
+
+main {
+    padding-top: 80px;
 }
 
 .card {
@@ -272,6 +313,7 @@ footer {
     justify-content: center;
     gap: 30px;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -313,4 +355,76 @@ footer {
 @keyframes pulseGlow {
     from { opacity: 0.2; transform: scale(0.8); }
     to { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    header {
+        padding: 1rem 5%;
+    }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .container {
+        padding: 120px 20px 60px 20px;
+        width: 100%;
+    }
+
+    main {
+        padding-top: 70px;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+
+    .pill-input-container {
+        max-width: 100%;
+        margin: 2rem auto;
+    }
+
+    .footer-links {
+        gap: 15px;
+    }
+
+    .logo-text {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 0.8rem 3%;
+    }
+
+    .container {
+        padding: 110px 15px 50px 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .pill-input-container {
+        padding: 8px 20px;
+    }
+
+    .category-card {
+        height: 200px;
+    }
+
+    .category-overlay {
+        padding: 1.5rem;
+    }
+
+    .category-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
 }
