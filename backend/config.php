@@ -1,6 +1,7 @@
 <?php
 /**
  * EUREKA LABS - CONFIGURAÇÃO ELITE & CORS MIDDLEWARE
+ * Versão: 2.0 - Com Gemini API Direct (não Manus)
  */
 
 // 1. Configurações de Base de Dados (PostgreSQL)
@@ -9,10 +10,10 @@ define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: 'password');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// 2. Configurações da API Manus (Gemini)
-define('MANUS_API_BASE', getenv('OPENAI_API_BASE') ?: 'https://api.manus.im/v1');
-define('MANUS_API_KEY', getenv('OPENAI_API_KEY') ?: '');
-define('MANUS_MODEL', 'gemini-3-flash-preview');
+// 2. Configurações da API Gemini (Google - DIRECTAMENTE)
+define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
+define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
+define('GEMINI_MODEL', 'gemini-1.5-flash');
 
 // 3. Middleware de CORS Definitivo
 // Capturar a origem do pedido
@@ -80,17 +81,34 @@ function getDBConnection() {
 }
 
 /**
- * Chamada à API Gemini via Proxy Manus (OpenAI Compatible)
+ * Chamada à API Gemini (Google - DIRECTAMENTE)
+ * Sem proxy Manus
  */
 function callGeminiAPI($prompt) {
-    $url = MANUS_API_BASE . '/chat/completions';
+    $apiKey = GEMINI_API_KEY;
+    
+    if (empty($apiKey)) {
+        error_log("Erro: GEMINI_API_KEY não está configurada!");
+        return null;
+    }
+    
+    // Endpoint do Gemini
+    $url = GEMINI_API_BASE . '/' . GEMINI_MODEL . ':generateContent?key=' . urlencode($apiKey);
     
     $data = [
-        'model' => MANUS_MODEL,
-        'messages' => [
-            ['role' => 'user', 'content' => $prompt]
+        'contents' => [
+            [
+                'parts' => [
+                    [
+                        'text' => $prompt
+                    ]
+                ]
+            ]
         ],
-        'max_tokens' => 4000
+        'generationConfig' => [
+            'maxOutputTokens' => 4000,
+            'temperature' => 0.7
+        ]
     ];
 
     $ch = curl_init($url);
@@ -98,11 +116,12 @@ function callGeminiAPI($prompt) {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . MANUS_API_KEY
+            'Content-Type: application/json'
         ],
         CURLOPT_POSTFIELDS => json_encode($data),
-        CURLOPT_TIMEOUT => 60
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2
     ]);
     
     $response = curl_exec($ch);
@@ -117,17 +136,45 @@ function callGeminiAPI($prompt) {
     curl_close($ch);
     
     if ($httpCode !== 200) {
-        error_log("Erro API Manus (HTTP $httpCode): " . $response);
+        error_log("Erro API Gemini (HTTP $httpCode): " . $response);
         return null;
     }
     
-    return json_decode($response, true);
+    $responseData = json_decode($response, true);
+    
+    // Gemini retorna formato diferente:
+    // { "candidates": [ { "content": { "parts": [ { "text": "..." } ] } } ] }
+    
+    if (!$responseData || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+        error_log("Resposta Gemini inválida: " . json_encode($responseData));
+        return null;
+    }
+    
+    // Converter para formato compatível com código existente
+    return [
+        'choices' => [
+            [
+                'message' => [
+                    'content' => $responseData['candidates'][0]['content']['parts'][0]['text']
+                ]
+            ]
+        ]
+    ];
 }
 
 // Auth Helpers
-function isValidEmail($email) { return filter_var($email, FILTER_VALIDATE_EMAIL); }
-function hashPassword($password) { return password_hash($password, PASSWORD_BCRYPT); }
-function verifyPassword($password, $hash) { return password_verify($password, $hash); }
+function isValidEmail($email) { 
+    return filter_var($email, FILTER_VALIDATE_EMAIL); 
+}
+
+function hashPassword($password) { 
+    return password_hash($password, PASSWORD_BCRYPT); 
+}
+
+function verifyPassword($password, $hash) { 
+    return password_verify($password, $hash); 
+}
+
 function generateToken($userId) {
     $jwt_secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
     $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
