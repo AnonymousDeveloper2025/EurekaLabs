@@ -64,22 +64,37 @@
         // ✅ CONFIGURAÇÃO CORRECTA DA API
         const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend/api';
 
+        console.log('=== QUESTIONS.HTML INICIADO ===');
+        console.log('API_BASE_URL:', API_BASE_URL);
+
         // Verificar autenticação
         const token = localStorage.getItem('authToken');
+        console.log('Token presente:', !!token);
+        
         if (!token) {
             alert('Não estás logado! Vai para o login.');
             window.location.href = 'login.html';
         }
 
-        const category = sessionStorage.getItem('selected_category');
-        const topic = sessionStorage.getItem('selected_topic');
-        const mode = sessionStorage.getItem('selected_mode') || 'simple';
+        // Obter dados de sessionStorage COM FALLBACK
+        let category = sessionStorage.getItem('selected_category') || 'geral';
+        let topic = sessionStorage.getItem('selected_topic') || 'Uma ideia inovadora';
+        let mode = sessionStorage.getItem('selected_mode') || 'simple';
+
+        console.log('Categoria:', category);
+        console.log('Tópico:', topic);
+        console.log('Modo:', mode);
         
         let currentStep = 0;
         let answers = [];
         let questions = [];
 
+        // Dicionário de perguntas POR CATEGORIA
         const categoryQuestions = {
+            'geral': [
+                { q: "Como te sentes inspirado?", options: ["Pela natureza", "Pela tecnologia", "Pela arte", "Pelas pessoas"] },
+                { q: "Qual é o teu objetivo?", options: ["Aprender", "Criar", "Resolver", "Relaxar"] }
+            ],
             'vida-pessoal': [
                 { q: "Qual é o teu foco principal?", options: ["Organização", "Saúde Mental", "Produtividade", "Hobbies"] },
                 { q: "Quanto tempo tens disponível?", options: ["15-30 min", "1-2 horas", "Meio dia", "Dia inteiro"] }
@@ -88,42 +103,96 @@
                 { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
                 { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
             ],
-            'negócios': [
+            'negocios': [
                 { q: "Qual é o teu modelo de negócio?", options: ["B2B", "B2C", "SaaS", "E-commerce"] },
                 { q: "Qual é o teu orçamento inicial?", options: ["Sem orçamento", "< €500", "€500-€5000", "> €5000"] }
+            ],
+            'tecnologia': [
+                { q: "Qual é a tua stack preferida?", options: ["Frontend", "Backend", "Full Stack", "DevOps"] },
+                { q: "Nível de experiência?", options: ["Iniciante", "Intermédio", "Avançado", "Expert"] }
             ]
         };
 
         function init() {
-            questions = categoryQuestions[category] || [
-                { q: "Como te sentes hoje?", options: ["Inspirado", "Cansado", "Curioso", "Determinado"] },
-                { q: "Qual o objetivo desta ideia?", options: ["Aprender algo", "Divertir-me", "Resolver um problema", "Relaxar"] }
-            ];
+            console.log('=== INICIANDO ===');
+            
+            // Obter perguntas da categoria ou usar default
+            questions = categoryQuestions[category] || categoryQuestions['geral'];
+            
+            console.log('Perguntas carregadas:', questions.length);
+            console.log('Primeira pergunta:', questions[0]?.q);
+            
+            // Renderizar primeira pergunta
             renderQuestion();
+            
+            console.log('=== INIT COMPLETO ===');
         }
 
         function renderQuestion() {
-            const q = questions[currentStep];
-            document.getElementById('questionTitle').innerText = q.q;
-            document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
+            console.log('Renderizando pergunta:', currentStep + 1, 'de', questions.length);
             
+            if (!questions[currentStep]) {
+                console.error('Pergunta não encontrada no índice:', currentStep);
+                return;
+            }
+
+            const q = questions[currentStep];
+            
+            // Actualizar título
+            document.getElementById('questionTitle').innerText = q.q;
+            
+            // Actualizar progress bar
+            const progress = ((currentStep + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Criar botões de opções
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
             
-            q.options.forEach(opt => {
+            q.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerHTML = `<span>${opt}</span>`;
                 btn.onclick = () => selectOption(opt, btn);
-                if(answers[currentStep] === opt) btn.classList.add('active');
+                
+                // Marcar opção anterior se existir
+                if(answers[currentStep] === opt) {
+                    btn.classList.add('active');
+                }
+                
                 list.appendChild(btn);
             });
 
+            // Actualizar botões de navegação
             document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
-            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
-            lucide.createIcons();
             
-            gsap.from('.option-btn', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentStep === questions.length - 1) {
+                nextBtn.innerHTML = 'Gerar Eureka <i data-lucide="zap"></i>';
+            } else {
+                nextBtn.innerHTML = 'Próximo <i data-lucide="arrow-right"></i>';
+            }
+            
+            // Actualizar ícones do Lucide
+            try {
+                lucide.createIcons();
+            } catch(e) {
+                console.warn('Erro ao criar ícones:', e);
+            }
+            
+            // Animação GSAP (com fallback se não houver GSAP)
+            try {
+                if (typeof gsap !== 'undefined') {
+                    gsap.from('.option-btn', { 
+                        opacity: 0, 
+                        x: -20, 
+                        stagger: 0.05, 
+                        duration: 0.5 
+                    });
+                }
+            } catch(e) {
+                console.warn('GSAP não disponível');
+            }
         }
 
         function selectOption(opt, btn) {
@@ -134,7 +203,11 @@
         }
 
         function handleNext() {
-            if(!answers[currentStep]) return;
+            if(!answers[currentStep]) {
+                alert('Por favor, selecciona uma opção');
+                return;
+            }
+            
             if(currentStep < questions.length - 1) {
                 currentStep++;
                 renderQuestion();
@@ -158,6 +231,15 @@
             document.getElementById('globalLoader').style.display = 'flex';
             
             try {
+                console.log('Iniciando geração de ideia...');
+                console.log('API URL:', API_BASE_URL);
+                console.log('Dados:', {
+                    topic: topic,
+                    mode: mode,
+                    category: category,
+                    answers: answers
+                });
+
                 // ✅ CHAMADA CORRECTA À API
                 const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
                     method: 'POST',
@@ -179,10 +261,13 @@
                 console.log('Response Data:', data);
 
                 if(response.ok && data.success) {
+                    console.log('Sucesso! Guardando ideia e redirecionando...');
                     sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
                     window.location.href = 'result.html';
                 } else {
-                    alert('❌ Erro: ' + (data.message || 'Erro desconhecido ao gerar ideia.'));
+                    const errorMsg = data.message || 'Erro desconhecido ao gerar ideia.';
+                    console.error('Erro na API:', errorMsg);
+                    alert('❌ Erro: ' + errorMsg);
                     document.getElementById('globalLoader').style.display = 'none';
                 }
             } catch (e) {
@@ -192,7 +277,13 @@
             }
         }
 
-        init();
+        // ✅ Iniciar quando o DOM está pronto
+        console.log('Aguardando DOM pronto...');
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
-        </html>
+</html>
