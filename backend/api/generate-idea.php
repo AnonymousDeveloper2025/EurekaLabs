@@ -1,15 +1,19 @@
 <?php
 /**
- * GENERATE IDEA - EUREKA LABS ELITE
- * Gera ideias usando Gemini API via Manus
+ * GENERATE IDEA - EUREKA LABS ELITE v3.0
+ * Versão Final Funcional com Gemini 2.5 Flash
  */
 
+// ✅ PRIMEIRO: Headers (sem output antes!)
+header('Content-Type: application/json');
+
+// ✅ SEGUNDO: Requires
 require_once '../../config.php';
 require_once '../../auth.php';
 
-header('Content-Type: application/json');
+// ✅ TERCEIRO: Processamento
 
-// 1. Validar autenticação (NOVO)
+// 1. Validar autenticação
 $userId = getAuthUserId();
 if (!$userId) {
     http_response_code(401);
@@ -48,13 +52,14 @@ if (strlen($topic) > 500) {
 }
 
 // 4. Construir prompt
-$answersText = !empty($answers) ? "Preferências: " . implode(', ', $answers) : "";
+$answersText = !empty($answers) ? "Preferências do utilizador: " . implode(', ', array_filter($answers)) : "";
 
 $systemPersona = "Tu és o IDEFY, o assistente de elite do Eureka Labs. 
-Responde APENAS com código HTML e CSS inline (dentro de uma div). 
+Responde APENAS com código HTML e CSS inline (dentro de uma div com max-width: 800px). 
 NÃO uses blocos de código markdown ou triple backticks. 
 Design: Modern Dark, Glassmorphism, Azul (#3b82f6) e Roxo (#8b5cf6).
-Responde em português.";
+Responde em português.
+Estrutura bem com headings, parágrafos e listas.";
 
 $prompt = "$systemPersona
 
@@ -62,9 +67,9 @@ TAREFA: Gera um " . ($mode === 'full' ? "PLANO COMPLETO (estruturado em secçõe
 
 $answersText
 
-Responde APENAS com HTML/CSS válido, sem markdown, sem explicações adicionais.";
+Responde APENAS com HTML/CSS válido, sem markdown, sem explicações adicionais. Usa estilos inline para cores e fontes.";
 
-// 5. Chamar API Gemini (via Manus ou outro proxy)
+// 5. Chamar API Gemini
 $response = callGeminiAPI($prompt);
 
 if (!$response || !isset($response['choices'][0]['message']['content'])) {
@@ -82,17 +87,17 @@ $htmlContent = $response['choices'][0]['message']['content'];
 // 6. Limpar markdown se existir
 $htmlContent = preg_replace('/^```html\s*|```\s*$/i', '', trim($htmlContent));
 
-// 7. Extrair título (NOVO: mais seguro)
+// 7. Extrair título
 $title = "Ideia para " . substr($topic, 0, 50);
 if (preg_match('/<h[1-2][^>]*>(.*?)<\/h[1-2]>/i', $htmlContent, $matches)) {
     $title = strip_tags($matches[1]);
 }
 
-// 8. Guardar no banco de dados (CORRIGIDO: usar RETURNING para PostgreSQL)
+// 8. Guardar no banco de dados
 try {
     $conn = getDBConnection();
     
-    // Usar RETURNING em vez de lastInsertId()
+    // Usar RETURNING para PostgreSQL
     $stmt = $conn->prepare("
         INSERT INTO ideas (user_id, category, title, content, created_at) 
         VALUES (?, ?, ?, ?, NOW()) 
@@ -104,9 +109,7 @@ try {
         $ideaId = $result['id'] ?? null;
         
         if ($ideaId) {
-            // Log de auditoria (Opcional)
-            logAudit($conn, $userId, 'CREATE_IDEA', "Ideia criada: $title");
-            
+            http_response_code(200);
             echo json_encode([
                 'success' => true,
                 'idea' => [
@@ -114,7 +117,8 @@ try {
                     'title' => $title,
                     'content' => $htmlContent,
                     'category' => $category,
-                    'mode' => $mode
+                    'mode' => $mode,
+                    'created_at' => date('Y-m-d H:i:s')
                 ]
             ]);
         } else {
@@ -129,23 +133,8 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Erro ao guardar a ideia. Tenta novamente mais tarde.'
+        'message' => 'Erro ao guardar a ideia. Tenta novamente mais tarde.',
+        'error' => $e->getMessage()
     ]);
-}
-
-/**
- * Função auxiliar para log de auditoria
- */
-function logAudit($conn, $userId, $action, $details) {
-    try {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-        $stmt = $conn->prepare("
-            INSERT INTO audit_log (user_id, action, details, ip_address) 
-            VALUES (?, ?, ?, ?)
-        ");
-        $stmt->execute([$userId, $action, $details, $ip]);
-    } catch (Exception $e) {
-        error_log("Audit log error: " . $e->getMessage());
-    }
 }
 ?>
