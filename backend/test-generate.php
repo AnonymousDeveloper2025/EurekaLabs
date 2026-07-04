@@ -1,20 +1,23 @@
 <?php
 /**
- * TEST GENERATE-IDEA ENDPOINT
- * Testa se o endpoint está a funcionar correctamente
+ * TEST GENERATE-IDEA ENDPOINT - CORRIGIDO
+ * SEM output antes dos headers!
  */
 
+// PRIMEIRO: require_once (sem echo antes!)
+require_once 'config.php';
+
+// Agora sim podemos fazer echo
 header('Content-Type: application/json');
 
 $apiKey = getenv('GEMINI_API_KEY') ?: '';
 
 if (empty($apiKey)) {
-    die(json_encode(['success' => false, 'message' => 'API Key não configurada']));
+    echo json_encode(['success' => false, 'message' => 'API Key não configurada']);
+    exit;
 }
 
-echo "🧪 Testando Generate-Idea Endpoint\n\n";
-
-// Simular um pedido como se viesse do frontend
+// Testar se consegue fazer uma ideia simples
 $testPayload = [
     'topic' => 'Como começar um negócio online',
     'mode' => 'simple',
@@ -22,41 +25,68 @@ $testPayload = [
     'answers' => []
 ];
 
-echo "Payload de teste:\n";
-echo json_encode($testPayload, JSON_PRETTY_PRINT) . "\n\n";
-
-// Precisamos de um token válido para testar
-// Vamos criar um token de teste
-require_once 'config.php';
-
 // Gerar token de teste
 $testUserId = 999;
 $testToken = generateToken($testUserId);
 
-echo "Token de teste gerado: " . substr($testToken, 0, 20) . "...\n\n";
+// Tentar chamar a API Gemini directamente (simular o que generate-idea.php faz)
+$testPrompt = "Tu és o IDEFY. Gera uma ideia sobre: " . $testPayload['topic'];
 
-// Testar o endpoint
-$url = 'http://localhost/backend/api/generate-idea.php'; // Ou o URL do Render
+$geminiUrl = GEMINI_API_BASE . '/' . GEMINI_MODEL . ':generateContent?key=' . urlencode($apiKey);
 
-echo "Testando endpoint em modo local...\n";
+$geminiData = [
+    'contents' => [
+        [
+            'parts' => [
+                ['text' => $testPrompt]
+            ]
+        ]
+    ],
+    'generationConfig' => [
+        'maxOutputTokens' => 1000,
+        'temperature' => 0.7
+    ]
+];
 
-$ch = curl_init($url);
+$ch = curl_init($geminiUrl);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $testToken
-    ],
-    CURLOPT_POSTFIELDS => json_encode($testPayload),
-    CURLOPT_TIMEOUT => 60
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS => json_encode($geminiData),
+    CURLOPT_TIMEOUT => 30
 ]);
 
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$geminiResponse = curl_exec($ch);
+$geminiHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-echo "HTTP Response Code: $httpCode\n\n";
-echo "Response:\n";
-echo json_encode(json_decode($response, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+if ($geminiHttpCode === 200) {
+    $geminiData = json_decode($geminiResponse, true);
+    
+    if (isset($geminiData['candidates'][0]['content']['parts'][0]['text'])) {
+        echo json_encode([
+            'success' => true,
+            'message' => '✅ Teste completo com sucesso!',
+            'test' => [
+                'model' => GEMINI_MODEL,
+                'prompt' => $testPrompt,
+                'response' => $geminiData['candidates'][0]['content']['parts'][0]['text'],
+                'token' => substr($testToken, 0, 20) . '...'
+            ]
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Resposta Gemini inválida',
+            'details' => $geminiData
+        ], JSON_PRETTY_PRINT);
+    }
+} else {
+    echo json_encode([
+        'success' => false,
+        'message' => "Erro ao chamar Gemini (HTTP $geminiHttpCode)",
+        'error' => json_decode($geminiResponse, true)
+    ], JSON_PRETTY_PRINT);
+}
 ?>
