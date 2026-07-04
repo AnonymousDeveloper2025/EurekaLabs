@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirecionar requests para API
+    RewriteBase /
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^api/(.*)$ backend/api/$1 [L]
+</IfModule>
+
+# Permitir acesso a ficheiros
+<FilesMatch "\.(php|html|css|js|json)$">
+    Allow from all
+</FilesMatch>
+
+# Desabilitar listagem de diretórios
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
