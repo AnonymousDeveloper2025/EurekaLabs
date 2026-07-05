@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personalizar | Eureka Labs</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -61,6 +61,9 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
+        // ✅ CORRIGIDO: URL da API (sem duplicar /api)
+        const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend/api';
+        
         const category = sessionStorage.getItem('selected_category');
         const topic = sessionStorage.getItem('selected_topic');
         const mode = sessionStorage.getItem('selected_mode') || 'simple';
@@ -77,8 +80,11 @@
             'aventura': [
                 { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
                 { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
+            ],
+            'negócios': [
+                { q: "Qual é o teu modelo de negócio?", options: ["B2B", "B2C", "SaaS", "E-commerce"] },
+                { q: "Qual é o teu orçamento inicial?", options: ["Sem orçamento", "< €500", "€500-€5000", "> €5000"] }
             ]
-            // Adicionar mais conforme necessário
         };
 
         function init() {
@@ -143,14 +149,19 @@
 
         async function startGeneration() {
             document.getElementById('globalLoader').style.display = 'flex';
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
+            
+            // ✅ CORRIGIDO: Obter token do localStorage
+            const token = localStorage.getItem('authToken');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/generate-idea.php`, {
+                // ✅ CORRIGIDO: URL correcta (sem /api duplicado) e com Authorization header
+                const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token  // ✅ NOVO: Token JWT obrigatório
+                    },
                     body: JSON.stringify({
-                        user_id: user?.id,
                         topic: topic || category,
                         mode: mode,
                         category: category,
@@ -167,7 +178,7 @@
                     document.getElementById('globalLoader').style.display = 'none';
                 }
             } catch (e) {
-                alert("Erro ao conectar com o IDEFY.");
+                alert("Erro ao conectar com o IDEFY: " + e.message);
                 document.getElementById('globalLoader').style.display = 'none';
             }
         }
