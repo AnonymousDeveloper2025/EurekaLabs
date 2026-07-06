@@ -31,9 +31,12 @@ if (in_array($origin, $allowed_origins) || preg_match('/github\.io$/', parse_url
     header("Access-Control-Allow-Origin: *");
 }
 
+// ✅ CORRIGIDO: Removido 'Access-Control-Allow-Credentials: true'.
+// Combinar "Allow-Origin: *" com "Allow-Credentials: true" é PROIBIDO pelo browser
+// e faz bloquear a resposta inteira (aparece como "Failed to fetch" no fetch()).
+// A app usa token JWT manual (não cookies), por isso este header nem é necessário.
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
-header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Max-Age: 3600');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
