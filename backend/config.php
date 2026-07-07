@@ -104,8 +104,8 @@ function callGeminiAPI($prompt) {
             ]
         ],
         'generationConfig' => [
-            'maxOutputTokens' => 4000,
-            'temperature' => 0.7
+            'maxOutputTokens' => 8192,
+            'temperature' => 0.6
         ]
     ];
 
