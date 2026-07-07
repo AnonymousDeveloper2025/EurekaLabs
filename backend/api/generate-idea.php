@@ -8,8 +8,9 @@
 header('Content-Type: application/json');
 
 // ✅ SEGUNDO: Requires
-require_once '../../config.php';
-require_once '../../auth.php';
+// ✅ CORRIGIDO: generate-idea.php está em backend/api/, só 1 nível abaixo de backend/config.php
+// (o require_once '../../config.php' estava errado e causava Fatal Error no servidor)
+require_once '../config.php';
 
 // ✅ TERCEIRO: Processamento
 
