@@ -216,10 +216,25 @@ function validateToken($token) {
 }
 
 function getAuthUserId() {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
+    $authHeader = '';
 
-    if (preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+    // 1. Tentar getallheaders() (funciona na maioria dos casos)
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
+    }
+
+    // 2. Fallback: $_SERVER directo (Apache às vezes só expõe aqui)
+    if (empty($authHeader)) {
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    }
+
+    // 3. Fallback: Apache com mod_rewrite renomeia para REDIRECT_HTTP_AUTHORIZATION
+    if (empty($authHeader)) {
+        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    }
+
+    if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
         $userId = validateToken($matches[1]);
         if ($userId) return $userId;
     }
