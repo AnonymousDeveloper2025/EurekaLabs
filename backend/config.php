@@ -181,4 +181,59 @@ function generateToken($userId) {
     $sE = rtrim(strtr(base64_encode($sig), '+/', '-_'), '=');
     return "$hE.$pE.$sE";
 }
+
+// ✅ NOVO: Validação de JWT juntada aqui para não depender de um ficheiro auth.php à parte
+function validateToken($token) {
+    $jwt_secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
+
+    if (!$token || empty($token)) return null;
+
+    $parts = explode('.', $token);
+    if (count($parts) !== 3) return null;
+
+    list($headerEnc, $payloadEnc, $sigEnc) = $parts;
+
+    $base64UrlDecode = function($str) {
+        $padding = 4 - (strlen($str) % 4);
+        if ($padding !== 4) $str .= str_repeat('=', $padding);
+        return base64_decode(strtr($str, '-_', '+/'));
+    };
+
+    $signatureInput = "$headerEnc.$payloadEnc";
+    $expectedSigBinary = hash_hmac('sha256', $signatureInput, $jwt_secret, true);
+    $expectedSigUrl = rtrim(strtr(base64_encode($expectedSigBinary), '+/', '-_'), '=');
+
+    if (!hash_equals($expectedSigUrl, $sigEnc)) return null;
+
+    try {
+        $payloadJson = $base64UrlDecode($payloadEnc);
+        $payload = json_decode($payloadJson, true);
+        if (!$payload || !isset($payload['userId'])) return null;
+        return $payload['userId'];
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function getAuthUserId() {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
+
+    if (preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+        $userId = validateToken($matches[1]);
+        if ($userId) return $userId;
+    }
+
+    return null;
+}
+
+function requireAuth() {
+    $userId = getAuthUserId();
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Não autorizado. Token inválido ou expirado.']);
+        exit;
+    }
+    return $userId;
+}
 ?>
