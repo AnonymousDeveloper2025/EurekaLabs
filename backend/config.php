@@ -16,6 +16,10 @@ define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/mode
 // ✅ MODELO CONFIRMADO QUE FUNCIONA:
 define('GEMINI_MODEL', 'gemini-2.5-flash');
 
+// 2b. Unsplash (opcional — usado no PDF; se vazia, cai automaticamente
+// no Picsum como imagem de reserva, que nunca falha)
+define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: '');
+
 // 3. Middleware de CORS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
@@ -105,7 +109,17 @@ function callGeminiAPI($prompt) {
         ],
         'generationConfig' => [
             'maxOutputTokens' => 8192,
-            'temperature' => 0.6
+            'temperature' => 0.6,
+            'thinkingConfig' => [
+                // ✅ CRÍTICO: Gemini 2.5 Flash "pensa" internamente por padrão,
+                // consumindo tokens do MESMO orçamento (maxOutputTokens) antes
+                // de escrever a resposta visível. Com prompts longos e
+                // detalhados, isso pode consumir quase todo o orçamento e
+                // deixar a resposta final truncada. thinkingBudget=0 desliga
+                // isto por completo, garantindo que TODO o orçamento vai para
+                // o conteúdo visível.
+                'thinkingBudget' => 0
+            ]
         ]
     ];
 
@@ -140,22 +154,76 @@ function callGeminiAPI($prompt) {
     
     $responseData = json_decode($response, true);
     
-    // Gemini retorna formato: { "candidates": [ { "content": { "parts": [ { "text": "..." } ] } } ] }
-    if (!$responseData || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+    if (!$responseData || !isset($responseData['candidates'][0])) {
         error_log("Resposta Gemini inválida: " . json_encode($responseData));
         return null;
     }
-    
+
+    $candidate = $responseData['candidates'][0];
+
+    // Regista sempre o finishReason nos logs do Render — ajuda a diagnosticar
+    // truncamentos futuros (ex: "MAX_TOKENS", "SAFETY", "STOP")
+    $finishReason = $candidate['finishReason'] ?? 'DESCONHECIDO';
+    error_log("Gemini finishReason: $finishReason");
+
+    // Junta TODAS as partes de texto (por segurança — o Gemini pode, em
+    // certos casos, dividir a resposta por várias 'parts')
+    $fullText = '';
+    if (isset($candidate['content']['parts']) && is_array($candidate['content']['parts'])) {
+        foreach ($candidate['content']['parts'] as $part) {
+            if (isset($part['text'])) {
+                $fullText .= $part['text'];
+            }
+        }
+    }
+
+    if (empty($fullText)) {
+        error_log("Gemini não devolveu texto. Resposta completa: " . json_encode($responseData));
+        return null;
+    }
+
     // Converter para formato compatível
     return [
         'choices' => [
             [
                 'message' => [
-                    'content' => $responseData['candidates'][0]['content']['parts'][0]['text']
+                    'content' => $fullText
                 ]
             ]
-        ]
+        ],
+        'finish_reason' => $finishReason
     ];
+}
+
+/**
+ * Busca uma imagem real relacionada com a query na API do Unsplash.
+ * Devolve null se não houver chave configurada ou se a pesquisa falhar —
+ * quem chamar esta função deve ter sempre um plano B (ex: Picsum).
+ */
+function getUnsplashImage($query) {
+    if (empty(UNSPLASH_API_KEY)) {
+        return null;
+    }
+
+    $url = 'https://api.unsplash.com/search/photos?query=' . urlencode($query)
+         . '&per_page=1&orientation=landscape&client_id=' . urlencode(UNSPLASH_API_KEY);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        error_log("Unsplash API erro (HTTP $httpCode): $response");
+        return null;
+    }
+
+    $data = json_decode($response, true);
+    return $data['results'][0]['urls']['regular'] ?? null;
 }
 
 // Auth Helpers
