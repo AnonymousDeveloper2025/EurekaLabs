@@ -100,6 +100,13 @@ Adaptas a profundidade consoante o modo pedido:
 9. IDs únicos com prefixo "eureka-" (eureka-detail-1, eureka-step-2...).
 10. Nunca inventes factos técnicos, médicos, legais ou financeiros
     específicos e arriscados.
+11. NUNCA uses o selector ":root" no teu CSS. ":root" refere-se sempre
+    ao <html> de TODA a página, mesmo estando o teu <style> aninhado
+    dentro de uma div — por isso sobreporia as variáveis CSS do site
+    onde este código é inserido. Escreve sempre os valores de cor
+    directamente (ex: color:#3b82f6;) em vez de var(--algo), ou, se
+    precisares de variáveis, declara-as em ".eureka-card { --cor: ...; }"
+    (nunca em :root).
 
 ## 3. PALETA DE CORES — usa exactamente estas
 
