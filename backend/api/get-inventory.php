@@ -1,66 +1,41 @@
 <?php
-/**
- * GET INVENTORY - Lista as ideias do utilizador autenticado
- * EUREKA LABS
- */
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Credentials: true');
 
-require_once '../config.php'; // ✅ 1 nível acima (backend/api/ → backend/)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+require_once '../config.php';
+
 header('Content-Type: application/json');
 
-$userId = requireAuth();
+$userId = $_GET['userId'] ?? null;
 
-$page = max(1, intval($_GET['page'] ?? 1));
-$limit = min(50, max(1, intval($_GET['limit'] ?? 10)));
-$offset = ($page - 1) * $limit;
-$category = trim($_GET['category'] ?? '');
-$search = trim($_GET['search'] ?? '');
-
-try {
-    $conn = getDBConnection();
-
-    $whereConditions = ['user_id = ?'];
-    $params = [$userId];
-
-    if (!empty($category)) {
-        $whereConditions[] = 'category = ?';
-        $params[] = $category;
-    }
-
-    if (!empty($search)) {
-        $whereConditions[] = '(title ILIKE ? OR content ILIKE ?)';
-        $params[] = "%$search%";
-        $params[] = "%$search%";
-    }
-
-    $whereClause = implode(' AND ', $whereConditions);
-
-    $stmt = $conn->prepare("
-        SELECT id, category, title, created_at
-        FROM ideas
-        WHERE $whereClause
-        ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
-    ");
-    $stmt->execute(array_merge($params, [$limit, $offset]));
-    $ideas = $stmt->fetchAll();
-
-    $countStmt = $conn->prepare("SELECT COUNT(*) as total FROM ideas WHERE $whereClause");
-    $countStmt->execute($params);
-    $total = (int) ($countStmt->fetch()['total'] ?? 0);
-
-    echo json_encode([
-        'success' => true,
-        'ideas' => $ideas,
-        'pagination' => [
-            'page' => $page,
-            'limit' => $limit,
-            'total' => $total,
-            'pages' => (int) ceil($total / $limit)
-        ]
-    ]);
-} catch (Exception $e) {
-    error_log("Erro get-inventory: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Erro ao recuperar ideias.']);
+if (!$userId) {
+    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
+    exit;
 }
+
+$conn = getDBConnection();
+
+$stmt = $conn->prepare("SELECT id, title, content, category, created_at, pdf_generated FROM ideas WHERE user_id = ? AND saved = 1 ORDER BY created_at DESC");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$ideas = [];
+while ($row = $result->fetch_assoc()) {
+    $ideas[] = $row;
+}
+
+echo json_encode([
+    'success' => true,
+    'ideas' => $ideas
+]);
+
+$stmt->close();
+$conn->close();
 ?>

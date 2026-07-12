@@ -1,49 +1,61 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Credentials: true');
+/**
+ * CHANGE PASSWORD — EUREKA LABS
+ * ✅ CORRIGIDO: usava a API do mysqli (bind_param, close, get_result) sobre
+ * uma ligação PDO — dava sempre Fatal Error. Também confiava num "userId"
+ * enviado directamente pelo cliente, o que permitia a qualquer pessoa mudar
+ * a password de OUTRO utilizador só adivinhando o id. Agora usa PDO e exige
+ * o JWT (requireAuth) + a password actual para confirmar a identidade.
+ */
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-require_once '../config.php';
-
+require_once '../config.php'; // já trata CORS e o pedido OPTIONS — não duplicar aqui
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$userId = requireAuth();
 
-$userId = $input['userId'] ?? null;
+$input = json_decode(file_get_contents('php://input'), true);
+$currentPassword = $input['currentPassword'] ?? '';
 $newPassword = $input['newPassword'] ?? '';
 
-if (!$userId || empty($newPassword)) {
-    echo json_encode(['success' => false, 'message' => 'Dados inválidos']);
+if (empty($currentPassword) || empty($newPassword)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Preenche a palavra-passe actual e a nova palavra-passe.']);
     exit;
 }
 
 if (strlen($newPassword) < 6) {
-    echo json_encode(['success' => false, 'message' => 'Palavra-passe deve ter pelo menos 6 caracteres']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'A nova palavra-passe deve ter pelo menos 6 caracteres.']);
     exit;
 }
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
 
-$hashedPassword = hashPassword($newPassword);
-$stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-$stmt->bind_param("si", $hashedPassword, $userId);
+    $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
 
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Palavra-passe alterada com sucesso']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao alterar palavra-passe']);
+    if (!$user || !verifyPassword($currentPassword, $user['password'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'A palavra-passe actual está incorrecta.']);
+        exit;
+    }
+
+    $hashedPassword = hashPassword($newPassword);
+    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $stmt->execute([$hashedPassword, $userId]);
+
+    echo json_encode(['success' => true, 'message' => 'Palavra-passe alterada com sucesso.']);
+} catch (Exception $e) {
+    error_log("Erro change-password: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Erro ao alterar a palavra-passe.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

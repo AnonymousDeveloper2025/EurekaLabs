@@ -1,49 +1,62 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Credentials: true');
+/**
+ * DELETE ACCOUNT — EUREKA LABS
+ * ✅ CORRIGIDO: usava a API do mysqli sobre uma ligação PDO (Fatal Error
+ * sempre) e confiava num "userId" enviado pelo cliente (qualquer pessoa
+ * podia apagar a conta de outro utilizador). Agora usa PDO, exige o JWT
+ * (requireAuth) e confirma a password antes de apagar — ação irreversível.
+ */
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
 require_once '../config.php';
-
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit;
 }
 
+$userId = requireAuth();
+
 $input = json_decode(file_get_contents('php://input'), true);
+$password = $input['password'] ?? '';
 
-$userId = $input['userId'] ?? null;
-
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Utilizador não identificado']);
+if (empty($password)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Confirma a tua palavra-passe para eliminar a conta.']);
     exit;
 }
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
 
-// Eliminar ideias do utilizador
-$stmt = $conn->prepare("DELETE FROM ideas WHERE user_id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$stmt->close();
+    $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
 
-// Eliminar utilizador
-$stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-$stmt->bind_param("i", $userId);
+    if (!$user || !verifyPassword($password, $user['password'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Palavra-passe incorrecta.']);
+        exit;
+    }
 
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Conta eliminada com sucesso']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao eliminar conta']);
+    // ON DELETE CASCADE já trata das ideias associadas, mas eliminamos
+    // explicitamente por segurança/clareza.
+    $conn->beginTransaction();
+    $stmt = $conn->prepare("DELETE FROM ideas WHERE user_id = ?");
+    $stmt->execute([$userId]);
+
+    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $conn->commit();
+
+    echo json_encode(['success' => true, 'message' => 'Conta eliminada com sucesso.']);
+} catch (Exception $e) {
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Erro delete-account: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Erro ao eliminar a conta.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>
