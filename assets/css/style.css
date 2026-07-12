@@ -1,3 +1,4 @@
+/* === Eureka Labs Stylesheet (Unified, Full) === */
 :root {
     --primary-bg: #030712; /* Azul Marinho Ultra Profundo */
     --secondary-bg: #0b1120;
@@ -33,8 +34,12 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
-    opacity: 0.4; /* Partículas subtis */
+    z-index: -2;
+    opacity: 0.95; /* mais visível */
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: saturate(1.15) contrast(1.05);
+    background: transparent;
 }
 
 /* Header Elite */
@@ -86,53 +91,12 @@ header {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* SIDE MENU & OVERLAY (NOVO) */
-.side-menu {
-    position: fixed;
-    left: -350px;
-    top: 0;
-    width: 350px;
-    height: 100vh;
-    background: var(--secondary-bg);
-    border-right: 1px solid var(--glass-border);
-    padding: 2rem;
-    z-index: 999;
-    transition: all 0.3s ease;
-    overflow-y: auto;
-}
-
-.side-menu.active {
-    left: 0;
-}
-
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 500;
-}
-
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
 /* Cards & Containers */
 .container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 140px 0 80px 0;
-}
-
-main {
-    padding-top: 80px;
 }
 
 .card {
@@ -181,7 +145,7 @@ main {
     border-color: white;
 }
 
-/* Modern Pill Input (Sem microfone ou +) */
+/* Modern Pill Input */
 .pill-input-container {
     background: var(--glass);
     border: 1px solid var(--glass-border);
@@ -270,7 +234,7 @@ main {
     color: var(--text-dim);
 }
 
-/* Question Option Buttons (Stylized) */
+/* Option Buttons */
 .option-btn {
     width: 100%;
     padding: 18px 25px;
@@ -300,7 +264,7 @@ main {
     font-weight: 600;
 }
 
-/* Footer Elite */
+/* Footer Elite (legacy fallback) */
 footer {
     padding: 5rem 8% 3rem 8%;
     text-align: center;
@@ -313,7 +277,6 @@ footer {
     justify-content: center;
     gap: 30px;
     margin-bottom: 2rem;
-    flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -357,74 +320,75 @@ footer {
     to { opacity: 0.5; transform: scale(1.2); }
 }
 
-/* RESPONSIVE DESIGN */
-@media (max-width: 768px) {
-    header {
-        padding: 1rem 5%;
-    }
+/* === Unified footer and header/menu fixes (additional rules) === */
 
-    .categories-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .container {
-        padding: 120px 20px 60px 20px;
-        width: 100%;
-    }
-
-    main {
-        padding-top: 70px;
-    }
-    
-    h1 {
-        font-size: 2rem !important;
-    }
-
-    .pill-input-container {
-        max-width: 100%;
-        margin: 2rem auto;
-    }
-
-    .footer-links {
-        gap: 15px;
-    }
-
-    .logo-text {
-        font-size: 1.1rem;
-    }
+/* Unified footer */
+.site-footer {
+  padding: 3.5rem 8%;
+  text-align: center;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 5rem;
+  color: var(--text-dim);
+  background: transparent;
 }
 
-@media (max-width: 480px) {
-    header {
-        padding: 0.8rem 3%;
-    }
+.site-footer .footer-links { 
+  display:flex;
+  justify-content:center;
+  gap:24px;
+  margin-bottom: 1rem;
+}
 
-    .container {
-        padding: 110px 15px 50px 15px;
-    }
+.site-footer .footer-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
 
-    h1 {
-        font-size: 1.5rem !important;
-    }
+.site-footer .footer-copy {
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
 
-    .pill-input-container {
-        padding: 8px 20px;
-    }
+/* Menu button / header fixes */
+.menu-btn, #menuToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  color: white;
+}
 
-    .category-card {
-        height: 200px;
-    }
+header .logo-container {
+  align-items: center;
+  gap: 12px;
+}
 
-    .category-overlay {
-        padding: 1.5rem;
-    }
+/* Side menu consistency */
+.side-menu { 
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 320px;
+  height: 100%;
+  background: rgba(3,7,18,0.95);
+  transition: right 0.36s cubic-bezier(.2,.9,.2,1);
+  z-index: 1200;
+  padding: 2rem;
+}
+.side-menu.active { right: 0; }
+.overlay { position: fixed; inset:0; background: rgba(0,0,0,0.45); opacity:0; pointer-events:none; transition: opacity 0.25s; z-index:1100; }
+.overlay.active { opacity:1; pointer-events:auto; }
 
-    .category-card h3 {
-        font-size: 1.1rem;
-    }
+/* Button circle for search */
+.btn-circle { background: var(--accent-blue); border: none; color: white; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-    .card {
-        padding: 1.5rem;
-    }
+/* Tweak footer existing rules to avoid duplication */
+footer { padding: 0; border-top: none; margin-top: 0; }
+
+@media (max-width:600px) {
+  .logo-text { font-size: 1.05rem; }
+  .btn { padding: 10px 16px; font-size: 0.9rem; }
+  .side-menu { width: 85%; }
 }
