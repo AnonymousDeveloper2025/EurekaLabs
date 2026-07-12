@@ -1,5 +1,5 @@
 // CONFIGURAÇÃO GLOBAL EUREKA LABS ELITE
-const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/backend';
+const API_BASE_URL = 'https://eureka-labs-backend.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar Partículas (Subtis e Profissionais)
@@ -23,13 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Menu Lateral Lógica
-    const menuToggle = document.getElementById('menuToggle');
-    const closeMenu = document.getElementById('closeMenu');
-    const sideMenu = document.getElementById('sideMenu');
-    const overlay = document.getElementById('overlay');
+    // Menu Lateral Lógica - seletores mais robustos
+    const menuToggle = document.querySelector('#menuToggle') || document.querySelector('.menu-btn');
+    const closeMenu = document.querySelector('#closeMenu') || document.querySelector('.close-menu');
+    const sideMenu = document.querySelector('#sideMenu') || document.querySelector('.side-menu');
+    const overlay = document.querySelector('#overlay') || document.querySelector('.overlay');
 
-    if (menuToggle) {
+    if (menuToggle && sideMenu && overlay) {
         menuToggle.addEventListener('click', () => {
             sideMenu.classList.add('active');
             overlay.classList.add('active');
@@ -39,14 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (closeMenu) {
+    if (closeMenu && sideMenu && overlay) {
         closeMenu.addEventListener('click', () => {
             sideMenu.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
 
-    if (overlay) {
+    if (overlay && sideMenu) {
         overlay.addEventListener('click', () => {
             sideMenu.classList.remove('active');
             overlay.classList.remove('active');
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Lucide Icons
+    // Lucide Icons - só chamar se disponível
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
