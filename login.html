@@ -3,111 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Eureka Labs Idefy</title>
+    <title>Entrar | Eureka Labs</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div class="loader-container" id="pageLoader">
+        <div class="loader-logo-wrap">
+            <div class="loader-glow"></div>
+            <img src="assets/img/logo.png" alt="Eureka Labs">
+        </div>
+        <p style="margin-top: 1.6rem; color: var(--text-dim); font-weight: 600;">Por favor aguarda...</p>
+    </div>
+
     <header>
         <a href="index.html" class="logo-container">
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Eureka Labs</span>
+            <img src="assets/img/logo.png" alt="Eureka Labs">
+            <span class="logo-text brand-eureka">Eureka Labs</span>
         </a>
     </header>
 
-    <main style="display: flex; align-items: center; justify-content: center;">
-        <div class="container" style="max-width: 450px;">
-            <div class="card fade-in">
-                <h1 style="text-align: center; margin-bottom: 2rem; font-size: 1.8rem;">🔐 Entrar</h1>
+    <main class="auth-page-wrap page-fade-in">
+        <div class="auth-card">
+            <div class="card">
+                <img src="assets/img/logo.png" alt="Eureka Labs" class="auth-hero-img">
+                <h1 style="text-align: center; margin-bottom: 0.4rem; font-size: 1.6rem; font-weight: 800;">Entrar</h1>
+                <p style="text-align: center; color: var(--text-dim); font-size: 0.92rem; margin-bottom: 2rem;">
+                    Continua a criar com o <span class="brand-idefy">Idefy</span>
+                </p>
+
+                <div class="reconnect-banner" id="reconnectBanner">
+                    <div class="dot-spinner"></div>
+                    <span id="reconnectText">A ligar ao servidor...</span>
+                </div>
+
+                <div id="loginError" class="auth-error">
+                    <i data-lucide="alert-triangle" style="width:16px;height:16px; flex-shrink:0;"></i>
+                    <span id="loginErrorText"></span>
+                </div>
 
                 <form id="loginForm">
                     <div class="form-group">
-                        <label>📧 Email</label>
-                        <input type="email" id="email" required placeholder="teu@email.com">
+                        <label><i data-lucide="mail"></i> Email</label>
+                        <input type="email" id="email" class="form-input" required placeholder="teu@email.com" autocomplete="email">
                     </div>
 
                     <div class="form-group">
-                        <label>🔑 Palavra-passe</label>
-                        <input type="password" id="password" required placeholder="••••••••">
+                        <label><i data-lucide="lock"></i> Palavra-passe</label>
+                        <input type="password" id="password" class="form-input" required placeholder="••••••••" autocomplete="current-password">
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                        Entrar
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 0.5rem;">
+                        <span id="loginBtnText">Entrar</span>
                     </button>
                 </form>
 
-                <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--pill-border);">
-                    <p style="color: var(--text-dim);">Sem conta? <a href="register.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Registar-se</a></p>
+                <div style="text-align: center; margin-top: 1.8rem; padding-top: 1.8rem; border-top: 1px solid var(--glass-border);">
+                    <p style="color: var(--text-dim); font-size: 0.9rem;">
+                        Sem conta? <a href="register.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Regista-te</a>
+                    </p>
                 </div>
             </div>
         </div>
     </main>
 
-        <footer>
-        <div class="footer-separator"></div>
+    <footer>
         <div class="footer-links">
-            <a href="terms.html">Termos de Serviços</a>
-            <a href="about.html">Sobre</a>
-            <a href="privacy.html">Privacidade</a>
-            <a href="help.html"><i class="fas fa-question-circle"></i> Ajuda</a>
+            <a href="about.html"><i data-lucide="info"></i> Sobre</a>
+            <a href="terms.html"><i data-lucide="file-text"></i> Termos</a>
+            <a href="privacy.html"><i data-lucide="shield"></i> Privacidade</a>
+            <a href="help.html"><i data-lucide="help-circle"></i> Ajuda</a>
         </div>
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 20px;">
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" style="color: var(--text-muted); transition: var(--transition);" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fab fa-github"></i>
-            </a>
-        </div>
-        <p style="color: #4b5563; font-size: 0.9rem; margin-top: 2rem;">© 2026 ∀nonymous Developer - Todos direitos reservados</p>
+        <p class="footer-copy">© 2026 Eureka Labs — Todos os direitos reservados</p>
     </footer>
 
+    <script src="assets/js/main.js"></script>
     <script>
+        function showLoginError(msg) {
+            document.getElementById('loginErrorText').textContent = msg;
+            document.getElementById('loginError').classList.add('visible');
+        }
+
+        function showReconnect(msg) {
+            document.getElementById('reconnectBanner').classList.add('visible');
+            document.getElementById('reconnectText').textContent = msg;
+        }
+        function hideReconnect() {
+            document.getElementById('reconnectBanner').classList.remove('visible');
+        }
+
+        if (isLoggedIn()) {
+            window.location.href = postLoginRedirect();
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const btn = e.target.querySelector('button');
-            const originalText = btn.innerHTML;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const btnText = document.getElementById('loginBtnText');
             btn.disabled = true;
-            btn.innerHTML = '<div class="loader-spinner" style="width: 20px; height: 20px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto;"></div>';
+            btnText.innerHTML = '<span class="spinner"></span>';
+            document.getElementById('loginError').classList.remove('visible');
+            hideReconnect();
+            document.getElementById('pageLoader').style.display = 'flex';
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/login.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const response = await fetchComRetry(
+                    `${API_BASE_URL}/auth/login.php`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    },
+                    showReconnect,
+                    3
+                );
 
-                if (!response.ok) throw new Error('Servidor indisponível');
-
+                hideReconnect();
                 const data = await response.json();
 
-                if (data.success) {
-                    localStorage.setItem('idefy_user', JSON.stringify(data.user));
-                    document.cookie = `idefy_token=${data.token}; path=/; max-age=31536000`;
-                    window.location.href = 'categories.html';
+                if (response.ok && data.success && data.token) {
+                    saveSession(data.token, data.user);
+                    // ✅ CORRIGIDO: antes voltava sempre para index.html.
+                    // Agora respeita a página de onde o utilizador veio
+                    // (ex: questions.html, create_idea.html).
+                    window.location.href = postLoginRedirect();
+                    return;
                 } else {
-                    alert('❌ ' + (data.message || 'Erro ao fazer login'));
+                    document.getElementById('pageLoader').style.display = 'none';
+                    showLoginError(data.message || 'Não foi possível iniciar sessão. Verifica o email e a palavra-passe.');
+                    btn.disabled = false;
+                    btnText.textContent = 'Entrar';
                 }
             } catch (error) {
-                console.error('Erro:', error);
-                alert('⚠️ Erro ao conectar com o servidor. O Render pode estar a iniciar, tenta novamente em 30 segundos.');
-            } finally {
+                hideReconnect();
+                document.getElementById('pageLoader').style.display = 'none';
+                showLoginError('Não foi possível ligar ao servidor. Tenta novamente em instantes.');
                 btn.disabled = false;
-                btn.innerHTML = originalText;
+                btnText.textContent = 'Entrar';
+            } finally {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         });
     </script>
-
-    <script src="assets/js/main.js"></script>
 </body>
 </html>

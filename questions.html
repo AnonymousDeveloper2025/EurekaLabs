@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personalizar | Eureka Labs</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-    <div id="particles-js"></div>
     <header>
         <a href="index.html" class="logo-container">
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Eureka Labs</span>
+            <img src="assets/img/logo.png" alt="Eureka Labs">
+            <span class="logo-text brand-eureka">Eureka Labs</span>
         </a>
     </header>
 
     <main class="container page-fade-in">
-        <div style="max-width: 650px; margin: 0 auto;">
+        <div style="max-width: 620px; margin: 0 auto;">
             <div class="card" id="questionCard">
                 <div style="margin-bottom: 2rem;">
                     <div style="width: 100%; height: 4px; background: var(--glass-border); border-radius: 10px; overflow: hidden;">
@@ -27,71 +27,71 @@
                     </div>
                 </div>
 
-                <p style="color: var(--accent-blue); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Assistente IDEFY</p>
-                <h1 id="questionTitle" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2.5rem; line-height: 1.3;">A carregar perguntas...</h1>
-                
+                <p style="color: var(--accent-blue); font-weight: 600; font-size: 0.88rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">
+                    Assistente <span class="brand-idefy" style="text-transform: none;">Idefy</span>
+                </p>
+                <h1 id="questionTitle" style="font-size: 1.7rem; font-weight: 700; margin-bottom: 2.3rem; line-height: 1.3;">A carregar perguntas...</h1>
+
                 <div id="optionsList"></div>
 
-                <div style="display: flex; justify-content: space-between; margin-top: 3rem; align-items: center;">
-                    <button id="prevBtn" class="btn btn-outline" onclick="handlePrev()" style="visibility: hidden; padding: 12px 25px;">
+                <div class="question-nav">
+                    <button id="prevBtn" class="btn btn-outline nav-side hidden" onclick="handlePrev()">
                         <i data-lucide="arrow-left"></i>
                     </button>
-                    
-                    <button class="btn btn-outline" onclick="skipToGenerate()" style="font-size: 0.85rem; border-color: transparent;">
-                        Pular e gerar agora
-                    </button>
-
-                    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()" style="padding: 12px 30px;">
+                    <div></div>
+                    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()">
                         Próximo <i data-lucide="arrow-right"></i>
                     </button>
                 </div>
+
+                <button class="question-skip-link" onclick="skipToGenerate()">Pular e gerar agora</button>
             </div>
         </div>
     </main>
 
-    <!-- Loader Profissional -->
-    <div id="globalLoader" class="loader-container">
-        <div class="loader-logo-wrap">
-            <div class="loader-glow"></div>
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" style="width: 80px; position: relative; z-index: 2; filter: drop-shadow(0 0 20px #3b82f6);">
-        </div>
-        <h2 id="loaderStatus" style="margin-top: 2.5rem; font-size: 1.3rem; font-weight: 500; color: white;">O IDEFY ESTÁ A CRIAR...</h2>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        // ✅ CORRIGIDO: URL da API (sem duplicar /api)
-        const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/api';
-        
-        const category = sessionStorage.getItem('selected_category');
+        const category = sessionStorage.getItem('selected_category') || 'geral';
         const topic = sessionStorage.getItem('selected_topic');
         const mode = sessionStorage.getItem('selected_mode') || 'simple';
-        
+
         let currentStep = 0;
         let answers = [];
         let questions = [];
 
         const categoryQuestions = {
             'vida-pessoal': [
-                { q: "Qual é o teu foco principal?", options: ["Organização", "Saúde Mental", "Produtividade", "Hobbies"] },
-                { q: "Quanto tempo tens disponível?", options: ["15-30 min", "1-2 horas", "Meio dia", "Dia inteiro"] }
+                { q: "Qual é o teu foco principal agora?", options: ["Organização doméstica", "Saúde e bem-estar", "Vida espiritual / fé", "Tempo em família"] },
+                { q: "Quanto tempo tens disponível?", options: ["15-30 minutos", "1-2 horas", "Um dia inteiro", "Um fim de semana"] }
             ],
             'aventura': [
-                { q: "Que tipo de ambiente preferes?", options: ["Natureza/Montanha", "Cidade/Urbano", "Praia/Mar", "Interior/Campo"] },
+                { q: "Que tipo de ambiente preferes?", options: ["Praia (Ilha, Cabo Ledo...)", "Natureza (Serra da Leba, Tundavala)", "Cidade (Luanda, Benguela...)", "Interior / savana"] },
                 { q: "Nível de adrenalina desejado?", options: ["Relaxante", "Moderado", "Intenso", "Extremo"] }
             ],
-            'negócios': [
-                { q: "Qual é o teu modelo de negócio?", options: ["B2B", "B2C", "SaaS", "E-commerce"] },
-                { q: "Qual é o teu orçamento inicial?", options: ["Sem orçamento", "< €500", "€500-€5000", "> €5000"] }
+            'futuro': [
+                { q: "Qual é a tua área de foco?", options: ["Carreira profissional", "Educação / formação", "Finanças pessoais", "Empreendedorismo"] },
+                { q: "Qual é o teu horizonte de tempo?", options: ["Próximos 3 meses", "Este ano", "2 a 3 anos", "5+ anos"] }
+            ],
+            'escola': [
+                { q: "Em que nível de ensino estás?", options: ["Ensino secundário", "Universidade", "Preparação para o Acesso", "Curso técnico-profissional"] },
+                { q: "Qual é a tua maior dificuldade?", options: ["Matemática / Exatas", "Línguas (Português/Inglês)", "Organização do tempo", "Motivação para estudar"] }
+            ],
+            'criatividade': [
+                { q: "Que área criativa te atrai mais?", options: ["Música (Semba, Kizomba, Kuduro...)", "Escrita / poesia", "Artes visuais / pintura", "Moda e design"] },
+                { q: "Qual é o teu nível de experiência?", options: ["Iniciante total", "Já pratico como hobby", "Alguma experiência", "Avançado/a"] }
+            ],
+            'empreendedorismo': [
+                { q: "Qual é o teu modelo de negócio?", options: ["Revenda / comércio informal", "Prestação de serviços", "Produção / fabrico próprio", "Digital / online"] },
+                { q: "Qual é o teu orçamento inicial?", options: ["Sem capital inicial", "Até 50.000 Kz", "50.000 - 500.000 Kz", "Mais de 500.000 Kz"] }
+            ],
+            'geral': [
+                { q: "Como te sentes hoje?", options: ["Inspirado/a", "Cansado/a", "Curioso/a", "Determinado/a"] },
+                { q: "Qual o objetivo desta ideia?", options: ["Aprender algo novo", "Divertir-me", "Resolver um problema", "Relaxar"] }
             ]
         };
 
         function init() {
-            questions = categoryQuestions[category] || [
-                { q: "Como te sentes hoje?", options: ["Inspirado", "Cansado", "Curioso", "Determinado"] },
-                { q: "Qual o objetivo desta ideia?", options: ["Aprender algo", "Divertir-me", "Resolver um problema", "Relaxar"] }
-            ];
+            questions = categoryQuestions[category] || categoryQuestions['geral'];
             renderQuestion();
         }
 
@@ -99,88 +99,62 @@
             const q = questions[currentStep];
             document.getElementById('questionTitle').innerText = q.q;
             document.getElementById('progressBar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
-            
+
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
-            
-            q.options.forEach(opt => {
+
+            const letras = ['A', 'B', 'C', 'D', 'E', 'F'];
+            q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.innerHTML = `<span>${opt}</span>`;
+                btn.innerHTML = `<span class="option-index">${letras[idx] || (idx + 1)}</span><span>${opt}</span>`;
                 btn.onclick = () => selectOption(opt, btn);
-                if(answers[currentStep] === opt) btn.classList.add('active');
+                if (answers[currentStep] === opt) btn.classList.add('active');
                 list.appendChild(btn);
             });
 
-            document.getElementById('prevBtn').style.visibility = currentStep > 0 ? 'visible' : 'hidden';
-            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1 ? 'Gerar Eureka <i data-lucide="zap"></i>' : 'Próximo <i data-lucide="arrow-right"></i>';
-            lucide.createIcons();
-            
-            gsap.from('.option-btn', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+            const prevBtn = document.getElementById('prevBtn');
+            prevBtn.classList.toggle('hidden', currentStep === 0);
+
+            document.getElementById('nextBtn').innerHTML = currentStep === questions.length - 1
+                ? 'Gerar Eureka <i data-lucide="zap"></i>'
+                : 'Próximo <i data-lucide="arrow-right"></i>';
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (typeof gsap !== 'undefined') gsap.from('.option-btn', { opacity: 0, x: -16, stagger: 0.05, duration: 0.4 });
         }
 
         function selectOption(opt, btn) {
             answers[currentStep] = opt;
             document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            setTimeout(handleNext, 300);
+            setTimeout(handleNext, 280);
         }
 
         function handleNext() {
-            if(!answers[currentStep]) return;
-            if(currentStep < questions.length - 1) {
+            if (!answers[currentStep]) return;
+            if (currentStep < questions.length - 1) {
                 currentStep++;
                 renderQuestion();
             } else {
-                startGeneration();
+                goToCreateIdea();
             }
         }
 
         function handlePrev() {
-            if(currentStep > 0) {
+            if (currentStep > 0) {
                 currentStep--;
                 renderQuestion();
             }
         }
 
         function skipToGenerate() {
-            startGeneration();
+            goToCreateIdea();
         }
 
-        async function startGeneration() {
-            document.getElementById('globalLoader').style.display = 'flex';
-            
-            // ✅ CORRIGIDO: Obter token do localStorage
-            const token = localStorage.getItem('authToken');
-            
-            try {
-                // ✅ CORRIGIDO: URL correcta (sem /api duplicado) e com Authorization header
-                const response = await fetch(`${API_BASE_URL}/generate-idea.php`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token  // ✅ NOVO: Token JWT obrigatório
-                    },
-                    body: JSON.stringify({
-                        topic: topic || category,
-                        mode: mode,
-                        category: category,
-                        answers: answers
-                    })
-                });
-
-                const data = await response.json();
-                if(data.success) {
-                    sessionStorage.setItem('last_generated_idea', JSON.stringify(data.idea));
-                    window.location.href = 'result.html';
-                } else {
-                    alert(data.message);
-                    document.getElementById('globalLoader').style.display = 'none';
-                }
-            } catch (e) {
-                alert("Erro ao conectar com o IDEFY: " + e.message);
-                document.getElementById('globalLoader').style.display = 'none';
-            }
+        function goToCreateIdea() {
+            sessionStorage.setItem('selected_answers', JSON.stringify(answers));
+            window.location.href = 'create_idea.html';
         }
 
         init();

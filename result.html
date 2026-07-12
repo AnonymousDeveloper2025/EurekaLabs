@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A tua Eureka | Eureka Labs</title>
+<link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-  /* Estilos específicos desta página, complementares ao style.css do site */
   .eureka-hero-img {
     width: 100%;
     height: 240px;
@@ -22,18 +22,11 @@
   .eureka-brand-label {
     text-align: center;
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 18px;
     letter-spacing: 0.2px;
   }
-  .eureka-brand-label .word-eureka { color: #c4b5fd; }
-  .eureka-brand-label .word-plain { color: var(--text-dim); }
-  .eureka-brand-label .word-idefy {
-    background: linear-gradient(to right, #3b82f6, #f8fafc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800;
-  }
+  .eureka-brand-label .word-plain { color: var(--text-dim); font-weight: 500; }
 
   .sandbox-wrap {
     position: relative;
@@ -83,12 +76,6 @@
     margin: 26px 0 50px 0;
     flex-wrap: wrap;
   }
-  .btn-danger {
-    background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #fca5a5;
-  }
-  .btn-danger:hover { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
 
   .about-eureka {
     max-width: 700px;
@@ -100,9 +87,7 @@
   .about-eureka h3 {
     font-size: 1.3rem;
     margin-bottom: 14px;
-    background: linear-gradient(to right, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-main);
   }
   .about-eureka p {
     color: var(--text-dim);
@@ -123,26 +108,29 @@
 </style>
 </head>
 <body>
-<div id="particles-js"></div>
 <header>
   <a href="index.html" class="logo-container">
-    <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-    <span class="logo-text">Eureka Labs</span>
+    <img src="assets/img/logo.png" alt="Eureka Labs">
+    <span class="logo-text brand-eureka">Eureka Labs</span>
   </a>
 </header>
 
 <main class="container page-fade-in">
 
-  <div id="loadingMsg">A carregar a tua Eureka... ✨</div>
+  <div id="loadingMsg">A carregar a tua Eureka...</div>
+  <div class="reconnect-banner" id="reconnectBanner" style="max-width: 480px; margin: 0 auto 1.3rem auto;">
+    <div class="dot-spinner"></div>
+    <span id="reconnectText">A ligar ao servidor...</span>
+  </div>
   <div id="errorMsg" style="display:none;"></div>
 
   <div id="ideaWrapper" style="display:none; max-width: 860px; margin: 0 auto;">
     <img id="heroImage" class="eureka-hero-img" src="" alt="Imagem ilustrativa do tópico">
 
     <p class="eureka-brand-label">
-      <span class="word-eureka">Eureka</span>
+      <span class="brand-eureka">Eureka</span>
       <span class="word-plain"> criada pelo </span>
-      <span class="word-idefy">Idefy</span>
+      <span class="brand-idefy">Idefy</span>
     </p>
 
     <div class="sandbox-wrap" id="sandboxWrap">
@@ -153,8 +141,11 @@
     </div>
 
     <div class="sandbox-actions">
-      <button class="btn btn-outline btn-danger" onclick="deleteIdea()">
+      <button class="btn btn-danger-outline" onclick="deleteIdea()">
         <i data-lucide="trash-2" style="width:16px;height:16px;"></i>&nbsp; Eliminar
+      </button>
+      <button class="btn btn-outline" id="saveBtn" onclick="saveIdea()">
+        <i data-lucide="bookmark" style="width:16px;height:16px;"></i>&nbsp; <span id="saveBtnText">Guardar</span>
       </button>
       <button class="btn btn-primary" id="pdfBtn" onclick="downloadPDF()">
         <i data-lucide="download" style="width:16px;height:16px;"></i>&nbsp; Baixar PDF
@@ -163,10 +154,10 @@
   </div>
 
   <div class="about-eureka">
-    <h3>Sobre a Eureka Labs</h3>
+    <h3>Sobre a <span class="brand-eureka">Eureka Labs</span></h3>
     <p>
       A Eureka Labs nasceu de uma ideia simples: todos temos boas ideias, mas
-      poucas chegam a sair da cabeça. Com o IDEFY, o nosso assistente de
+      poucas chegam a sair da cabeça. Com o <span class="brand-idefy" style="font-weight:700;">Idefy</span>, o nosso assistente de
       inteligência artificial, transformamos qualquer curiosidade — um
       negócio, uma viagem, um novo hábito — num plano claro, bonito e pronto
       a seguir. Sem folhas em branco. Só o próximo passo.
@@ -175,45 +166,55 @@
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 <script src="assets/js/main.js"></script>
 <script>
-// ⚠️ Confirma que esta é a URL correcta do teu backend
-const API_BASE_URL = 'https://eureka-labs-backend.onrender.com/api';
+// ✅ API_BASE_URL, getAuthToken() e authHeaders() já vêm do main.js — não duplicar
 
-const token = localStorage.getItem('authToken');
 const params = new URLSearchParams(window.location.search);
 const ideaId = params.get('id');
 
 let currentIdea = null;
 
 const categoryImageKeyword = {
-  'negocios': 'business',
+  'negocios': 'business', 'empreendedorismo': 'business',
   'vida-pessoal': 'lifestyle',
   'aventura': 'adventure',
+  'futuro': 'future',
+  'escola': 'education',
+  'criatividade': 'art',
   'tecnologia': 'technology',
   'geral': 'inspiration'
 };
+
+function showReconnect(msg) {
+  document.getElementById('reconnectBanner').classList.add('visible');
+  document.getElementById('reconnectText').textContent = msg;
+}
+function hideReconnect() {
+  document.getElementById('reconnectBanner').classList.remove('visible');
+}
 
 async function loadIdea() {
   try {
     if (ideaId) {
       // Veio do inventory.html — buscar ao backend pelo ID
-      if (!token) { showError('Precisas de estar autenticado para ver esta ideia.'); return; }
-      const res = await fetch(`${API_BASE_URL}/get-idea.php?id=${encodeURIComponent(ideaId)}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
+      if (!isLoggedIn()) { showError('Precisas de iniciar sessão para ver esta ideia.'); return; }
+      const res = await fetchComRetry(`${API_BASE_URL}/get-idea.php?id=${encodeURIComponent(ideaId)}`, {
+        headers: authHeaders()
+      }, showReconnect, 3);
+      hideReconnect();
       const data = await res.json();
       if (!res.ok || !data.success) { showError(data.message || 'Não foi possível carregar esta ideia.'); return; }
       currentIdea = data.idea;
     } else {
-      // Veio do questions.html — ler do sessionStorage
+      // Veio do questions.html / index.html — ler do sessionStorage
       const stored = sessionStorage.getItem('last_generated_idea');
       if (!stored) { showError('Não encontrámos nenhuma ideia gerada. Volta atrás e cria uma nova.'); return; }
       currentIdea = JSON.parse(stored);
     }
     renderIdea(currentIdea);
   } catch (e) {
+    hideReconnect();
     showError('Erro ao carregar a ideia: ' + e.message);
   }
 }
@@ -221,7 +222,7 @@ async function loadIdea() {
 function showError(msg) {
   document.getElementById('loadingMsg').style.display = 'none';
   const errEl = document.getElementById('errorMsg');
-  errEl.textContent = '⚠️ ' + msg;
+  errEl.textContent = msg;
   errEl.style.display = 'block';
 }
 
@@ -229,13 +230,10 @@ function renderIdea(idea) {
   document.getElementById('loadingMsg').style.display = 'none';
   document.getElementById('ideaWrapper').style.display = 'block';
 
-  // Imagem de topo — baseada na categoria + título (única por ideia)
   const keyword = categoryImageKeyword[idea.category] || 'inspiration';
   const seedExtra = (idea.title || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
   document.getElementById('heroImage').src = `https://picsum.photos/seed/${keyword}${seedExtra}/1200/400`;
 
-  // Renderizar o conteúdo dentro do iframe — documento próprio e isolado,
-  // evita qualquer conflito de CSS com o site e permite o Lucide funcionar
   const iframe = document.getElementById('sandboxFrame');
   const fullDoc = `<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">
     <script src="https://unpkg.com/lucide@latest"><\/script>
@@ -249,7 +247,55 @@ function renderIdea(idea) {
     </body></html>`;
   iframe.srcdoc = fullDoc;
 
-  lucide.createIcons();
+  updateSaveButton(!!idea.saved);
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function updateSaveButton(saved) {
+  const btn = document.getElementById('saveBtn');
+  const text = document.getElementById('saveBtnText');
+  if (saved) {
+    text.textContent = 'Guardada';
+    btn.disabled = true;
+  } else {
+    text.textContent = 'Guardar';
+    btn.disabled = false;
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function saveIdea() {
+  if (!currentIdea || !currentIdea.id) {
+    alert('Esta ideia ainda não foi gerada por completo — aguarda um instante.');
+    return;
+  }
+  const btn = document.getElementById('saveBtn');
+  const text = document.getElementById('saveBtnText');
+  const original = text.textContent;
+  btn.disabled = true;
+  text.textContent = 'A guardar...';
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/save-idea.php`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ id: currentIdea.id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentIdea.saved = true;
+      updateSaveButton(true);
+    } else {
+      alert('Erro: ' + data.message);
+      btn.disabled = false;
+      text.textContent = original;
+    }
+  } catch (e) {
+    alert('Erro ao guardar: ' + e.message);
+    btn.disabled = false;
+    text.textContent = original;
+  }
 }
 
 function toggleFullscreen() {
@@ -272,21 +318,17 @@ async function deleteIdea() {
   try {
     const res = await fetch(`${API_BASE_URL}/delete-idea.php`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ id: currentIdea.id })
     });
     const data = await res.json();
     if (data.success) {
-      alert('✅ Ideia eliminada.');
       window.location.href = 'inventory.html';
     } else {
-      alert('❌ Erro: ' + data.message);
+      alert('Erro: ' + data.message);
     }
   } catch (e) {
-    alert('❌ Erro ao eliminar: ' + e.message);
+    alert('Erro ao eliminar: ' + e.message);
   }
 }
 
@@ -304,10 +346,7 @@ async function downloadPDF() {
   try {
     const res = await fetch(`${API_BASE_URL}/generate-pdf.php`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ id: currentIdea.id })
     });
 
@@ -326,11 +365,11 @@ async function downloadPDF() {
     a.remove();
     URL.revokeObjectURL(url);
   } catch (e) {
-    alert('❌ Não foi possível gerar o PDF: ' + e.message);
+    alert('Não foi possível gerar o PDF: ' + e.message);
   } finally {
     btn.innerHTML = originalHTML;
     btn.disabled = false;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 }
 

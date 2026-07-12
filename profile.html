@@ -3,89 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil | Eureka Labs Elite</title>
+    <title>Perfil | Eureka Labs</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-    <div id="particles-js"></div>
     <header>
         <a href="index.html" class="logo-container">
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Eureka Labs</span>
+            <img src="assets/img/logo.png" alt="Eureka Labs">
+            <span class="logo-text brand-eureka">Eureka Labs</span>
         </a>
-        <div id="menuToggle" style="cursor: pointer; color: white; padding: 10px;">
+        <div id="menuToggle" class="icon-btn">
             <i data-lucide="menu"></i>
         </div>
     </header>
 
     <div class="overlay" id="overlay"></div>
     <nav class="side-menu" id="sideMenu">
-        <div id="closeMenu" style="cursor:pointer; margin-bottom:2.5rem; text-align:right;"><i data-lucide="x"></i></div>
-        <ul style="list-style:none;">
-            <li style="margin-bottom:1.5rem;"><a href="index.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="home"></i> Início</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="inventory.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="package"></i> Inventário</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="categories.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="target"></i> Categorias</a></li>
-            <li style="margin-bottom:1.5rem;"><a href="profile.html" style="color:white; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="user"></i> Perfil</a></li>
-            <li style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--glass-border);"><a href="javascript:logout()" style="color:#ff6b6b; text-decoration:none; display:flex; align-items:center; gap:12px; font-size:1.1rem;"><i data-lucide="log-out"></i> Sair</a></li>
+        <div class="close-menu" id="closeMenu"><i data-lucide="x"></i></div>
+        <ul class="menu-links">
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li class="menu-divider"><a href="javascript:logout()" class="danger"><i data-lucide="log-out"></i> Sair</a></li>
         </ul>
     </nav>
 
-    <main class="container page-fade-in" style="display: flex; align-items: center; justify-content: center; min-height: 80vh;">
-        <div class="card" style="width: 100%; max-width: 500px; padding: 3rem; text-align: center;">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; margin: 0 auto 2rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: white; box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);">
+    <main class="container page-fade-in" style="display: flex; align-items: center; justify-content: center; min-height: 85vh;">
+        <div class="card" style="width: 100%; max-width: 480px; padding: 2.75rem; text-align: center;">
+            <div class="profile-avatar">
                 <span id="userInitial">U</span>
             </div>
-            
-            <h1 id="userName" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">Nome do Utilizador</h1>
-            <p id="userEmail" style="color: var(--text-dim); margin-bottom: 2.5rem;">email@exemplo.com</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 2.5rem;">
-                <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--glass-border);">
-                    <h4 style="font-size: 0.8rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Ideias</h4>
-                    <span id="statIdeas" style="font-size: 1.5rem; font-weight: 800;">0</span>
+            <h1 id="userName" style="font-size: 1.7rem; font-weight: 700; margin-bottom: 0.4rem;">—</h1>
+            <p id="userEmail" style="color: var(--text-dim); margin-bottom: 2.3rem;">—</p>
+
+            <div class="reconnect-banner" id="reconnectBanner">
+                <div class="dot-spinner"></div>
+                <span id="reconnectText">A ligar ao servidor...</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 2.3rem;">
+                <div class="profile-stat">
+                    <h4>Ideias</h4>
+                    <span id="statIdeas">0</span>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--glass-border);">
-                    <h4 style="font-size: 0.8rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Nível</h4>
-                    <span style="font-size: 1.5rem; font-weight: 800;">Elite</span>
+                <div class="profile-stat">
+                    <h4>PDFs</h4>
+                    <span id="statPdfs">0</span>
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <a href="inventory.html" class="btn btn-primary" style="width: 100%;">Ver Meu Inventário</a>
-                <button onclick="logout()" class="btn btn-outline" style="width: 100%; color: #ff6b6b; border-color: rgba(255,107,107,0.2);">Terminar Sessão</button>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem;">
+                <a href="inventory.html" class="btn btn-primary btn-block">Ver o Meu Inventário</a>
+                <button type="button" class="btn btn-outline btn-block" onclick="toggleSettings('passwordPanel')">
+                    <i data-lucide="lock" style="width:16px;height:16px;"></i> Mudar Palavra-passe
+                </button>
+                <button onclick="logout()" class="btn btn-danger-outline btn-block">
+                    <i data-lucide="log-out" style="width:16px;height:16px;"></i> Terminar Sessão
+                </button>
+            </div>
+
+            <!-- Painel: mudar palavra-passe -->
+            <div id="passwordPanel" style="display:none; text-align:left; margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid var(--glass-border);">
+                <div id="passwordError" class="auth-error"><i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i><span id="passwordErrorText"></span></div>
+                <div id="passwordSuccess" class="auth-error" style="background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.3); color: #86efac;"><i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;"></i><span id="passwordSuccessText"></span></div>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label><i data-lucide="lock"></i> Palavra-passe actual</label>
+                        <input type="password" id="currentPassword" class="form-input" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label><i data-lucide="lock"></i> Nova palavra-passe</label>
+                        <input type="password" id="newPassword" class="form-input" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <span id="passwordBtnText">Guardar Nova Palavra-passe</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Painel: eliminar conta -->
+            <div style="text-align:left; margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid var(--glass-border);">
+                <button type="button" class="btn btn-danger-outline btn-block" onclick="toggleSettings('deletePanel')">
+                    <i data-lucide="trash-2" style="width:16px;height:16px;"></i> Eliminar Conta
+                </button>
+                <div id="deletePanel" style="display:none; text-align:left; margin-top: 1.2rem;">
+                    <p style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem;">
+                        Esta acção é irreversível: todas as tuas ideias serão eliminadas para sempre.
+                    </p>
+                    <div id="deleteError" class="auth-error"><i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i><span id="deleteErrorText"></span></div>
+                    <form id="deleteForm">
+                        <div class="form-group">
+                            <label><i data-lucide="lock"></i> Confirma a tua palavra-passe</label>
+                            <input type="password" id="deletePassword" class="form-input" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-danger-outline btn-block">
+                            <span id="deleteBtnText">Eliminar a Minha Conta Definitivamente</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const user = JSON.parse(localStorage.getItem('idefy_user'));
+        function showReconnect(msg) {
+            document.getElementById('reconnectBanner').classList.add('visible');
+            document.getElementById('reconnectText').textContent = msg;
+        }
+        function hideReconnect() {
+            document.getElementById('reconnectBanner').classList.remove('visible');
+        }
+
+        async function loadProfile() {
+            const user = getAuthUser();
             if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            document.getElementById('userName').innerText = user.name;
-            document.getElementById('userEmail').innerText = user.email;
-            document.getElementById('userInitial').innerText = user.name.charAt(0).toUpperCase();
+            document.getElementById('userName').innerText = user.name || 'Utilizador';
+            document.getElementById('userEmail').innerText = user.email || '';
+            document.getElementById('userInitial').innerText = (user.name || 'U').charAt(0).toUpperCase();
 
+            // ✅ CORRIGIDO: antes contava só os itens da 1ª página do
+            // inventário (máx. 10). Agora usa o get-stats.php, dedicado.
             try {
-                const response = await fetch(`${API_BASE_URL}/api/get-stats.php?userId=${user.id}`);
+                const response = await fetchComRetry(`${API_BASE_URL}/get-stats.php`, { headers: authHeaders() }, showReconnect, 3);
+                hideReconnect();
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('statIdeas').innerText = data.ideas_count;
+                    document.getElementById('statIdeas').innerText = data.ideas_count ?? 0;
+                    document.getElementById('statPdfs').innerText = data.pdfs_count ?? 0;
                 }
             } catch (e) {
-                console.error("Erro ao carregar stats");
+                hideReconnect();
+                console.warn('Não foi possível carregar estatísticas:', e.message);
             }
-            
-            lucide.createIcons();
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function toggleSettings(id) {
+            const panel = document.getElementById(id);
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // --- Mudar palavra-passe ---
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('passwordError').classList.remove('visible');
+            document.getElementById('passwordSuccess').classList.remove('visible');
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const btnText = document.getElementById('passwordBtnText');
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>';
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            try {
+                const res = await fetchComRetry(`${API_BASE_URL}/change-password.php`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ currentPassword, newPassword })
+                }, showReconnect, 3);
+                hideReconnect();
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    document.getElementById('passwordSuccessText').textContent = data.message || 'Palavra-passe alterada com sucesso.';
+                    document.getElementById('passwordSuccess').classList.add('visible');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    document.getElementById('passwordErrorText').textContent = data.message || 'Não foi possível alterar a palavra-passe.';
+                    document.getElementById('passwordError').classList.add('visible');
+                }
+            } catch (err) {
+                hideReconnect();
+                document.getElementById('passwordErrorText').textContent = 'Não foi possível ligar ao servidor. Tenta novamente.';
+                document.getElementById('passwordError').classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Guardar Nova Palavra-passe';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         });
+
+        // --- Eliminar conta ---
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('deleteError').classList.remove('visible');
+
+            const confirmado = confirm('Tens mesmo a certeza? Esta acção elimina a tua conta e todas as tuas ideias para sempre.');
+            if (!confirmado) return;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const btnText = document.getElementById('deleteBtnText');
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>';
+
+            const password = document.getElementById('deletePassword').value;
+
+            try {
+                const res = await fetchComRetry(`${API_BASE_URL}/delete-account.php`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ password })
+                }, showReconnect, 3);
+                hideReconnect();
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('authUser');
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('deleteErrorText').textContent = data.message || 'Não foi possível eliminar a conta.';
+                    document.getElementById('deleteError').classList.add('visible');
+                    btn.disabled = false;
+                    btnText.textContent = 'Eliminar a Minha Conta Definitivamente';
+                }
+            } catch (err) {
+                hideReconnect();
+                document.getElementById('deleteErrorText').textContent = 'Não foi possível ligar ao servidor. Tenta novamente.';
+                document.getElementById('deleteError').classList.add('visible');
+                btn.disabled = false;
+                btnText.textContent = 'Eliminar a Minha Conta Definitivamente';
+            } finally {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+
+        loadProfile();
     </script>
 </body>
 </html>

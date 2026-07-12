@@ -3,110 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eureka Labs | Elite IA Assistant</title>
+    <title>Eureka Labs | Assistente IDEFY</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-    <div id="particles-js"></div>
-
     <header>
         <a href="index.html" class="logo-container">
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" alt="Eureka Labs Logo">
-            <span class="logo-text">Eureka Labs</span>
+            <img src="assets/img/logo.png" alt="Eureka Labs">
+            <span class="logo-text brand-eureka">Eureka Labs</span>
         </a>
-        <div style="display: flex; gap: 15px; align-items: center;">
+
+        <!-- Visível apenas quando NÃO tem sessão iniciada -->
+        <div id="guestButtons" style="display: flex; gap: 12px; align-items: center;">
             <a href="login.html" class="btn btn-outline" style="padding: 10px 20px; font-size: 0.85rem;">Entrar</a>
-            <a href="register.html" class="btn btn-primary" style="padding: 10px 25px; font-size: 0.85rem;">Começar</a>
+            <a href="register.html" class="btn btn-primary" style="padding: 10px 22px; font-size: 0.85rem;">Começar</a>
+        </div>
+
+        <!-- Visível apenas quando TEM sessão iniciada -->
+        <div id="userArea" style="display: none; align-items: center; gap: 12px;">
+            <a href="profile.html" class="header-user-chip">
+                <span class="header-avatar" id="headerAvatar">U</span>
+                <span class="header-user-name" id="headerUserName">Utilizador</span>
+            </a>
+            <div id="menuToggle" class="icon-btn">
+                <i data-lucide="menu"></i>
+            </div>
         </div>
     </header>
 
-    <main class="container page-fade-in" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh;">
-        <div style="max-width: 850px; width: 100%;">
+    <div class="overlay" id="overlay"></div>
+    <nav class="side-menu" id="sideMenu">
+        <div class="close-menu" id="closeMenu"><i data-lucide="x"></i></div>
+        <ul class="menu-links">
+            <li><a href="index.html"><i data-lucide="home"></i> Início</a></li>
+            <li><a href="inventory.html"><i data-lucide="package"></i> Inventário</a></li>
+            <li><a href="categories.html"><i data-lucide="target"></i> Categorias</a></li>
+            <li><a href="profile.html"><i data-lucide="user"></i> Perfil</a></li>
+            <li><a href="about.html"><i data-lucide="info"></i> Sobre</a></li>
+            <li class="menu-divider"><a href="javascript:logout()" class="danger"><i data-lucide="log-out"></i> Sair</a></li>
+        </ul>
+    </nav>
+
+    <main class="container page-fade-in" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh;">
+        <div style="max-width: 820px; width: 100%;">
+
+            <img src="assets/img/logo.png" alt="Eureka Labs" id="heroLogo" style="width: 84px; height: 84px; margin: 0 auto 1.8rem auto; display: block; filter: drop-shadow(0 0 25px rgba(59,130,246,0.5));">
+
             <div id="hero-content">
-                <h1 id="hero-title" style="font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px;">
-                    Em que posso ajudar, <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eureka</span>?
+                <h1 style="font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 800; line-height: 1.15; margin-bottom: 1.3rem; letter-spacing: -1.5px;">
+                    Em que posso ajudar?<br>
+                    Pergunta ao <span class="brand-idefy">Idefy</span>.
                 </h1>
-                <p style="color: var(--text-dim); font-size: 1.25rem; margin-bottom: 3.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Transformamos o teu tempo livre em experiências memoráveis com o nosso assistente IDEFY.</p>
+                <p style="color: var(--text-dim); font-size: 1.15rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Transformamos qualquer ideia num plano claro e pronto a seguir — em segundos.
+                </p>
             </div>
 
             <form id="searchForm" class="pill-input-container">
-                <input type="text" id="topicInput" class="pill-input" placeholder="Peça ao Idefy... (ex: Plano de férias em Portugal)" autocomplete="off">
-                <button type="submit" style="background: var(--accent-blue); border: none; color: white; cursor: pointer; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth);">
+                <input type="text" id="topicInput" class="pill-input" placeholder="Pede uma ideia... (ex: negócio de revenda em Luanda)" autocomplete="off">
+                <button type="submit" style="background: var(--accent-blue); border: none; color: white; cursor: pointer; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); flex-shrink: 0;">
                     <i data-lucide="arrow-up" style="width: 20px; height: 20px;"></i>
                 </button>
             </form>
 
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 2rem;">
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 1.8rem; flex-wrap: wrap;">
                 <button type="button" class="btn btn-outline mode-btn active" onclick="setMode('simple', this)">
-                    <i data-lucide="zap" style="width: 18px;"></i> Ideia Simples
+                    <i data-lucide="zap" style="width: 17px;"></i> Ideia Simples
                 </button>
                 <button type="button" class="btn btn-outline mode-btn" onclick="setMode('full', this)">
-                    <i data-lucide="layout" style="width: 18px;"></i> Plano Completo
+                    <i data-lucide="layout" style="width: 17px;"></i> Plano Completo
                 </button>
             </div>
+
+            <p style="margin-top: 2.5rem;">
+                <a href="categories.html" style="color: var(--text-dim); font-size: 0.88rem; text-decoration: underline; text-underline-offset: 3px;">
+                    ou explora por categorias
+                </a>
+            </p>
         </div>
     </main>
 
     <footer>
         <div class="footer-links">
-            <a href="terms.html">Termos</a>
-            <a href="about.html">Sobre</a>
-            <a href="privacy.html">Privacidade</a>
-            <a href="help.html">Ajuda</a>
+            <a href="about.html"><i data-lucide="info"></i> Sobre</a>
+            <a href="terms.html"><i data-lucide="file-text"></i> Termos</a>
+            <a href="privacy.html"><i data-lucide="shield"></i> Privacidade</a>
+            <a href="help.html"><i data-lucide="help-circle"></i> Ajuda</a>
         </div>
-        <p style="font-size: 0.85rem; opacity: 0.5;">© 2026 ∀nonymous Developer — Eureka Labs Elite Version</p>
+        <p class="footer-copy">© 2026 Eureka Labs — Todos os direitos reservados</p>
     </footer>
 
-    <!-- Loader Profissional -->
-    <div id="globalLoader" class="loader-container">
-        <div class="loader-logo-wrap">
-            <div class="loader-glow"></div>
-            <img src="https://anonymousdeveloper2025.github.io/EurekaLabs/e.png" style="width: 80px; position: relative; z-index: 2; filter: drop-shadow(0 0 20px #3b82f6);">
-        </div>
-        <h2 id="loaderStatus" style="margin-top: 2.5rem; font-size: 1.3rem; font-weight: 500; letter-spacing: 1px; color: white;">O IDEFY ESTÁ A CRIAR...</h2>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
+        // ✅ CORRIGIDO: depois do login, a página continuava sempre a
+        // mostrar "Entrar"/"Começar". Agora mostra um ícone de perfil por
+        // omissão + o nome do utilizador, e o menu lateral.
+        (function updateHeaderAuthState() {
+            const user = getAuthUser();
+            if (isLoggedIn() && user) {
+                document.getElementById('guestButtons').style.display = 'none';
+                document.getElementById('userArea').style.display = 'flex';
+                document.getElementById('headerUserName').textContent = user.name || 'Utilizador';
+                document.getElementById('headerAvatar').textContent = (user.name || 'U').charAt(0).toUpperCase();
+            }
+        })();
+
         let currentMode = 'simple';
 
         function setMode(mode, btn) {
             currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            gsap.from(btn, { scale: 0.95, duration: 0.3, ease: "elastic.out(1, 0.3)" });
+            if (typeof gsap !== 'undefined') gsap.from(btn, { scale: 0.94, duration: 0.3, ease: "back.out(2)" });
         }
 
         document.getElementById('searchForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const topic = document.getElementById('topicInput').value;
+            const topic = document.getElementById('topicInput').value.trim();
             if (!topic) return;
 
-            sessionStorage.setItem('selected_topic', topic);
-            sessionStorage.setItem('selected_mode', currentMode);
-            
-            gsap.to('main', { opacity: 0, y: -30, duration: 0.6, ease: "power4.in", onComplete: () => {
-                window.location.href = 'categories.html';
-            }});
+            sessionStorage.setItem('pending_topic', topic);
+            sessionStorage.setItem('pending_mode', currentMode);
+            sessionStorage.setItem('selected_category', 'geral');
+
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html?next=generate';
+                return;
+            }
+
+            window.location.href = 'create_idea.html';
         });
 
-        // GSAP Hero Animation
-        gsap.from('#hero-content', { opacity: 0, y: 40, duration: 1.2, ease: "power4.out" });
-        gsap.from('.pill-input-container', { opacity: 0, y: 20, duration: 1, delay: 0.4, ease: "power4.out" });
-        gsap.from('.mode-btn', { opacity: 0, y: 10, stagger: 0.1, delay: 0.7, duration: 0.8 });
-
-        lucide.createIcons();
+        if (typeof gsap !== 'undefined') {
+            gsap.from('#heroLogo', { opacity: 0, scale: 0.7, duration: 1, ease: "back.out(1.7)" });
+            gsap.from('#hero-content', { opacity: 0, y: 30, duration: 1, delay: 0.15, ease: "power4.out" });
+            gsap.from('.pill-input-container', { opacity: 0, y: 20, duration: 1, delay: 0.35, ease: "power4.out" });
+            gsap.from('.mode-btn', { opacity: 0, y: 10, stagger: 0.1, delay: 0.55, duration: 0.7 });
+        }
     </script>
     <style>
-        .mode-btn.active {
-            background: rgba(255,255,255,0.08);
-            border-color: white;
-            color: white;
-        }
+        .mode-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent-blue); color: #fff; }
     </style>
 </body>
 </html>
