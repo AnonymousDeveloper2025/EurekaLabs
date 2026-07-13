@@ -1,11 +1,33 @@
 <?php
 require_once 'config.php';
 
+/**
+ * Corre uma instrução SQL e ignora "já existe" (a tabela/coluna já está
+ * criada — objectivo alcançado). Isto torna o setup.php seguro para correr
+ * várias vezes seguidas, incluindo quando dois pedidos chegam quase ao
+ * mesmo tempo (ex: o browser tenta novamente porque o Render demorou a
+ * acordar) — o que antes causava "relation ideas already exists".
+ */
+function runSafe(PDO $pdo, string $sql, array $etapas = []): void {
+    try {
+        $pdo->exec($sql);
+    } catch (PDOException $e) {
+        $sqlstate = $e->getCode();
+        if (!$sqlstate && isset($e->errorInfo[0])) {
+            $sqlstate = $e->errorInfo[0];
+        }
+        // 42P07 = duplicate_table no PostgreSQL, 42701 = duplicate_column
+        if ($sqlstate === '42P07' || $sqlstate === '42701') {
+            return; // já existe — nada a fazer, não é um erro real
+        }
+        throw $e;
+    }
+}
+
 try {
     $pdo = getDBConnection();
 
-    // Tabela de Utilizadores
-    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+    runSafe($pdo, "CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -13,20 +35,12 @@ try {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // ✅ CORRIGIDO: esta tabela chamava-se "inventory", mas TODOS os
-    // endpoints (get-inventory.php, get-idea.php, delete-idea.php,
-    // generate-idea.php, save-idea.php, get-stats.php) fazem SELECT/INSERT
-    // na tabela "ideas". Isso fazia com que, numa base de dados nova, todas
-    // essas queries falhassem com "relation ideas does not exist".
-    //
-    // Se já tens uma base de dados em produção com a tabela "inventory"
-    // criada (no Render), esta linha renomeia-a automaticamente e preserva
-    // todos os dados existentes. Se a tabela "inventory" não existir (ex:
-    // base de dados nova), a linha simplesmente não faz nada.
-    $pdo->exec("ALTER TABLE IF EXISTS inventory RENAME TO ideas");
+    // Renomeia a tabela antiga "inventory" para "ideas", só se "inventory"
+    // ainda existir (preserva dados de instalações antigas). Se já foi
+    // renomeada antes, isto não faz nada.
+    runSafe($pdo, "ALTER TABLE IF EXISTS inventory RENAME TO ideas");
 
-    // Tabela de Ideias
-    $pdo->exec("CREATE TABLE IF NOT EXISTS ideas (
+    runSafe($pdo, "CREATE TABLE IF NOT EXISTS ideas (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         category VARCHAR(50) NOT NULL,
@@ -39,15 +53,13 @@ try {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // ✅ Garante que estas colunas existem mesmo numa tabela "ideas" já
-    // criada anteriormente sem elas (ex: por uma versão antiga deste
-    // ficheiro). Nunca falha nem apaga dados.
-    $pdo->exec("ALTER TABLE ideas ADD COLUMN IF NOT EXISTS saved BOOLEAN DEFAULT FALSE");
-    $pdo->exec("ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated BOOLEAN DEFAULT FALSE");
-    $pdo->exec("ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated_at TIMESTAMP");
+    runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS saved BOOLEAN DEFAULT FALSE");
+    runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated BOOLEAN DEFAULT FALSE");
+    runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated_at TIMESTAMP");
 
     echo json_encode(["success" => true, "message" => "Tabelas criadas/actualizadas com sucesso no PostgreSQL!"]);
 } catch (Exception $e) {
+    http_response_code(500);
     echo json_encode(["success" => false, "message" => "Erro ao criar tabelas: " . $e->getMessage()]);
 }
 ?>
