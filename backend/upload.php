@@ -3,7 +3,7 @@
 $repoOwner = "AnonymousDeveloper2025"; // <-- teu username GitHub
 $repoName  = "AngoNet-page";           // <-- nome do repositório
 $branch    = "main";                   // <-- branch alvo
-$token     = "COLOCA_AQUI_TEU_TOKEN";  // <-- teu token GitHub (PAT)
+$token     = "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";  // <-- teu token GitHub (PAT)
 
 // Função para enviar ficheiro para GitHub
 function githubUpload($fileName, $fileData, $message, $token, $repoOwner, $repoName, $branch, $sha = null) {
