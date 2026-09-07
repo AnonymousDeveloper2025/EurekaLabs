@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload para Ango Net Store</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    h2 {
+      color: #1e90ff;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:hover {
+      background: #4682b4;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Enviar para Ango Net Store</h2>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" name="nome" required>
+
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" name="descricao" rows="3" required></textarea>
+
+      <label for="file">Ficheiro principal</label>
+      <input type="file" id="file" name="file" required>
+
+      <label for="image">Imagem</label>
+      <input type="file" id="image" name="image" accept="image/*" required>
+
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+</body>
+</html>
