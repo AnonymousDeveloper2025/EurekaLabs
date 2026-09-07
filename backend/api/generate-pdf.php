@@ -2,27 +2,23 @@
 /**
  * GENERATE PDF — EUREKA LABS
  *
- * ✅ CORRIGIDO (ronda anterior): PDO em vez de mysqli, requireAuth() em vez
- * de confiar no cliente, payload alinhado com o result.html, CORS duplicado
- * removido.
+ * ✅ CORRIGIDO (rondas anteriores): PDO em vez de mysqli, requireAuth() em
+ * vez de confiar no cliente, payload alinhado com o result.html, CORS
+ * duplicado removido, blocos <style>/<script> removidos por completo,
+ * texto convertido de UTF-8 para o formato que o FPDF entende.
  *
- * ✅ CORRIGIDO NESTA RONDA — o PDF vinha "com CSS em texto e acentos
- * trocados":
- * 1) strip_tags() remove as TAGS <style> e <script>, mas NÃO o conteúdo lá
- *    dentro — por isso as regras CSS apareciam como texto normal no PDF.
- *    Agora removemos esses blocos por completo (tag + conteúdo) antes de
- *    extrair o texto.
- * 2) O FPDF (motor usado aqui) não entende UTF-8 — espera Windows-1252.
- *    Como a ideia é gerada e guardada em UTF-8 (com "é", "ã", "€", etc.),
- *    o texto ficava com "Ã©", "Ã£", "â‚¬" (mojibake clássico). Agora todo
- *    o texto passa por utf8ToPdf() antes de ir para o PDF.
- * 3) O conteúdo era despejado como um bloco de texto único, sem distinguir
- *    títulos de parágrafos ou listas — agora percorre a estrutura HTML
- *    (títulos maiores/a roxo, marcadores nas listas) para ficar legível e
- *    ocupar várias páginas quando o conteúdo é mais rico.
- * 4) Só metia 1 imagem genérica (baseada no título) no fim. Agora usa as
- *    imagens reais do Unsplash que já vêm embutidas no conteúdo da ideia
- *    (até 3), inseridas junto das secções a que pertencem.
+ * ✅ CORRIGIDO NESTA RONDA:
+ * 1) "Todas as imagens numa página" — antes extraíamos todas as <img> do
+ *    conteúdo e colávamos-as todas juntas no fim. Agora cada <img> é
+ *    processada NO SEU LUGAR, à medida que aparece no texto, por isso
+ *    ficam espalhadas pelas secções a que pertencem.
+ * 2) Fundo branco — cada PDF tem agora uma cor de fundo e uma moldura
+ *    decorativa, escolhidas por tema (ver getPdfTheme()).
+ * 3) Tipo de letra sempre igual — agora varia (Arial/Times/Courier)
+ *    consoante o tema da ideia.
+ * 4) Títulos e citações sem destaque — títulos ganham um marcador
+ *    quadrado colorido; citações (<blockquote>/<q>) ganham itálico,
+ *    aspas e uma barra vertical colorida à esquerda.
  */
 
 require_once '../config.php'; // já trata CORS e OPTIONS — não duplicar
@@ -68,41 +64,112 @@ try {
 
 require_once '../vendor/fpdf/fpdf.php';
 
-// Converte UTF-8 (como o conteúdo é guardado) para Windows-1252 (o que o
-// FPDF espera). //TRANSLIT troca caracteres sem equivalente (ex: emojis)
-// pela aproximação mais próxima em vez de rebentar.
 function utf8ToPdf($text) {
     $converted = @iconv('UTF-8', 'CP1252//TRANSLIT', $text);
     return $converted !== false ? $converted : preg_replace('/[^\x20-\x7E]/', '', $text);
 }
 
-class PDF extends FPDF {
+/**
+ * Escolhe um "tema" visual (fundo, cor de destaque, tipo de letra, estilo
+ * de moldura) consoante a categoria da ideia. Categorias sem tema definido
+ * caem num tema escolhido de forma consistente (mesma categoria = mesmo
+ * visual sempre) a partir de uma lista de reserva.
+ */
+function getPdfTheme($category) {
+    $themes = [
+        'tecnologia'   => ['bg' => [233, 240, 250], 'accent' => [37, 99, 235],  'font' => 'Courier', 'border' => 'solid'],
+        'negocio'      => ['bg' => [231, 240, 237], 'accent' => [13, 118, 105], 'font' => 'Arial',   'border' => 'double'],
+        'criatividade' => ['bg' => [250, 235, 245], 'accent' => [219, 39, 119], 'font' => 'Times',   'border' => 'dashed'],
+        'aventura'     => ['bg' => [237, 243, 227], 'accent' => [77, 124, 15],  'font' => 'Arial',   'border' => 'solid'],
+        'culinaria'    => ['bg' => [253, 240, 220], 'accent' => [194, 108, 8],  'font' => 'Times',   'border' => 'double'],
+        'bem-estar'    => ['bg' => [239, 236, 250], 'accent' => [109, 40, 217], 'font' => 'Times',   'border' => 'dashed'],
+        'viagem'       => ['bg' => [224, 242, 246], 'accent' => [8, 132, 155],  'font' => 'Arial',   'border' => 'solid'],
+        'geral'        => ['bg' => [235, 236, 245], 'accent' => [79, 70, 229],  'font' => 'Arial',   'border' => 'solid'],
+    ];
+    $key = strtolower(trim($category));
+    if (isset($themes[$key])) return $themes[$key];
+
+    // Categoria não mapeada: escolhe um tema de forma consistente (mesma
+    // categoria dá sempre o mesmo resultado) em vez de deixar tudo cinzento.
+    $fallback = array_values($themes);
+    return $fallback[crc32($key) % count($fallback)];
+}
+
+class ThemedPDF extends FPDF {
+    public $theme;
+    private $margin = 15;
+
     public function Header() {
-        $this->SetFont('Arial', 'B', 20);
-        $this->SetTextColor(59, 130, 246);
+        // Fundo colorido (nunca branco puro)
+        $this->SetFillColor($this->theme['bg'][0], $this->theme['bg'][1], $this->theme['bg'][2]);
+        $this->Rect(0, 0, 210, 297, 'F');
+
+        // Moldura decorativa — o estilo varia consoante o tema
+        [$r, $g, $b] = $this->theme['accent'];
+        $this->SetDrawColor($r, $g, $b);
+        $m = $this->margin - 5;
+        if ($this->theme['border'] === 'double') {
+            $this->SetLineWidth(0.9);
+            $this->Rect($m, $m, 210 - 2 * $m, 297 - 2 * $m);
+            $this->SetLineWidth(0.3);
+            $this->Rect($m + 2.2, $m + 2.2, 210 - 2 * ($m + 2.2), 297 - 2 * ($m + 2.2));
+        } elseif ($this->theme['border'] === 'dashed') {
+            $this->SetLineWidth(0.6);
+            $this->dashedRect($m, $m, 210 - 2 * $m, 297 - 2 * $m, 3, 2);
+        } else {
+            $this->SetLineWidth(0.7);
+            $this->Rect($m, $m, 210 - 2 * $m, 297 - 2 * $m);
+        }
+        $this->SetLineWidth(0.2);
+
+        $this->SetY($this->margin + 2);
+        $this->SetFont($this->theme['font'], 'B', 19);
+        $this->SetTextColor($r, $g, $b);
         $this->Cell(0, 10, 'Eureka Labs - Idefy', 0, 1, 'C');
-        $this->SetFont('Arial', '', 10);
-        $this->SetTextColor(150, 150, 150);
+        $this->SetFont($this->theme['font'], 'I', 9);
+        $this->SetTextColor(90, 90, 90);
         $this->Cell(0, 5, utf8ToPdf('Gerador de Ideias'), 0, 1, 'C');
-        $this->Ln(5);
+        $this->Ln(4);
     }
 
     public function Footer() {
-        $this->SetY(-15);
-        $this->SetFont('Arial', 'I', 8);
-        $this->SetTextColor(100, 100, 100);
+        $this->SetY(-20);
+        [$r, $g, $b] = $this->theme['accent'];
+        $this->SetFont($this->theme['font'], 'I', 8);
+        $this->SetTextColor($r, $g, $b);
         $this->Cell(0, 10, utf8ToPdf('Página ' . $this->PageNo()), 0, 0, 'C');
+    }
+
+    public function dashedRect($x, $y, $w, $h, $dash, $gap) {
+        $this->dashedLine($x, $y, $x + $w, $y, $dash, $gap);
+        $this->dashedLine($x + $w, $y, $x + $w, $y + $h, $dash, $gap);
+        $this->dashedLine($x + $w, $y + $h, $x, $y + $h, $dash, $gap);
+        $this->dashedLine($x, $y + $h, $x, $y, $dash, $gap);
+    }
+
+    public function dashedLine($x1, $y1, $x2, $y2, $dash, $gap) {
+        $dist = sqrt(($x2 - $x1) ** 2 + ($y2 - $y1) ** 2);
+        if ($dist < 0.01) return;
+        $steps = (int) floor($dist / ($dash + $gap));
+        $dx = ($x2 - $x1) / $dist;
+        $dy = ($y2 - $y1) / $dist;
+        $x = $x1; $y = $y1;
+        for ($i = 0; $i < $steps; $i++) {
+            $xEnd = $x + $dx * $dash;
+            $yEnd = $y + $dy * $dash;
+            $this->Line($x, $y, $xEnd, $yEnd);
+            $x = $xEnd + $dx * $gap;
+            $y = $yEnd + $dy * $gap;
+        }
     }
 }
 
-// --- Prepara o conteúdo: remove <style>/<script> por completo, separa as imagens ---
+$theme = getPdfTheme($idea['category'] ?? 'geral');
+
+// --- Prepara o conteúdo: remove <style>/<script> por completo ---
 $rawContent = $idea['content'];
 $rawContent = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $rawContent);
 $rawContent = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $rawContent);
-
-preg_match_all('/<img[^>]*src="([^"]+)"[^>]*>/i', $rawContent, $imgMatches);
-$contentImages = array_slice(array_unique($imgMatches[1]), 0, 3);
-$rawContent = preg_replace('/<img[^>]*>/i', '', $rawContent);
 
 libxml_use_internal_errors(true);
 $dom = new DOMDocument();
@@ -110,38 +177,101 @@ $dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $rawContent . '</div>');
 libxml_clear_errors();
 $rootDiv = $dom->getElementsByTagName('div')->item(0);
 
-$blockTags = ['h1', 'h2', 'h3', 'h4', 'p', 'div', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'section', 'article'];
+$blockTags = ['h1', 'h2', 'h3', 'h4', 'p', 'div', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'section', 'article', 'blockquote'];
+$imageCache = []; // evita descarregar a mesma imagem duas vezes
+$imagesInserted = 0;
+$MAX_IMAGES = 6;
 
-function renderNode($pdf, DOMNode $node) {
+function insertPdfImage($pdf, $url, &$imageCache, &$imagesInserted, $maxImages) {
+    if ($imagesInserted >= $maxImages) return;
+    try {
+        if (!isset($imageCache[$url])) {
+            $data = @file_get_contents($url);
+            if (!$data) { $imageCache[$url] = false; return; }
+            $path = sys_get_temp_dir() . '/idefy_' . md5($url) . '.jpg';
+            file_put_contents($path, $data);
+            $imageCache[$url] = $path;
+        }
+        $path = $imageCache[$url];
+        if (!$path || !file_exists($path)) return;
+
+        $usableWidth = $pdf->GetPageWidth() - 2 * 20;
+        $displayHeight = $usableWidth * 0.6; // valor de reserva, caso getimagesize() falhe
+        $dims = @getimagesize($path);
+        if ($dims && $dims[0] > 0) {
+            $displayHeight = $usableWidth * ($dims[1] / $dims[0]);
+        }
+        if ($pdf->GetY() + $displayHeight > 270) $pdf->AddPage();
+        $pdf->Ln(3);
+        $pdf->Image($path, ($pdf->GetPageWidth() - $usableWidth) / 2, $pdf->GetY(), $usableWidth, $displayHeight);
+        $pdf->SetY($pdf->GetY() + $displayHeight + 4);
+        $imagesInserted++;
+    } catch (Exception $e) {
+        error_log("Erro generate-pdf (imagem $url): " . $e->getMessage());
+    }
+}
+
+function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted, $maxImages) {
     global $blockTags;
     foreach ($node->childNodes as $child) {
         if ($child->nodeType !== XML_ELEMENT_NODE) continue;
         $tag = strtolower($child->nodeName);
-        $text = trim(preg_replace('/\s+/', ' ', $child->textContent));
 
+        // ✅ Imagens são tratadas NO SEU LUGAR, não todas no fim
+        if ($tag === 'img') {
+            $src = $child->getAttribute('src');
+            if ($src) insertPdfImage($pdf, $src, $imageCache, $imagesInserted, $maxImages);
+            continue;
+        }
+
+        $text = trim(preg_replace('/\s+/', ' ', $child->textContent));
         if ($text === '') continue;
 
+        [$r, $g, $b] = $theme['accent'];
+
         if (in_array($tag, ['h1', 'h2', 'h3', 'h4'])) {
-            $pdf->Ln(3);
-            $pdf->SetFont('Arial', 'B', $tag === 'h1' ? 16 : ($tag === 'h2' ? 14 : 12));
-            $pdf->SetTextColor(139, 92, 246);
+            $pdf->Ln(4);
+            // Marcador quadrado colorido antes do título
+            $pdf->SetFillColor($r, $g, $b);
+            $pdf->Rect($pdf->GetX(), $pdf->GetY() + 2, 3.2, 3.2, 'F');
+            $pdf->SetX($pdf->GetX() + 6);
+            $pdf->SetFont($theme['font'], 'B', $tag === 'h1' ? 16 : ($tag === 'h2' ? 14 : 12));
+            $pdf->SetTextColor($r, $g, $b);
             $pdf->MultiCell(0, 7, utf8ToPdf($text));
-            $pdf->SetFont('Arial', '', 11);
-            $pdf->SetTextColor(20, 20, 20);
+            $pdf->SetFont($theme['font'], '', 11);
+            $pdf->SetTextColor(30, 30, 30);
             $pdf->Ln(1);
+        } elseif ($tag === 'blockquote' || $tag === 'q') {
+            $startY = $pdf->GetY();
+            $pdf->SetX($pdf->lMargin + 8);
+            $pdf->SetFont($theme['font'], 'I', 11);
+            $pdf->SetTextColor(70, 70, 70);
+            $pdf->MultiCell(0, 6, utf8ToPdf('" ' . $text . ' "'));
+            $endY = $pdf->GetY();
+            $pdf->SetDrawColor($r, $g, $b);
+            $pdf->SetLineWidth(1);
+            $pdf->Line($pdf->lMargin + 4, $startY + 1, $pdf->lMargin + 4, $endY - 1);
+            $pdf->SetLineWidth(0.2);
+            $pdf->SetFont($theme['font'], '', 11);
+            $pdf->SetTextColor(30, 30, 30);
+            $pdf->Ln(2);
         } elseif ($tag === 'li') {
-            $pdf->SetX($pdf->GetX() + 4);
-            $pdf->MultiCell(0, 5.5, utf8ToPdf('- ' . $text));
+            $pdf->SetFillColor($r, $g, $b);
+            $bx = $pdf->GetX() + 2;
+            $by = $pdf->GetY() + 2.3;
+            $pdf->Rect($bx, $by, 1.8, 1.8, 'F');
+            $pdf->SetX($pdf->GetX() + 7);
+            $pdf->MultiCell(0, 5.5, utf8ToPdf($text));
         } else {
             $hasBlockChild = false;
             foreach ($child->childNodes as $grandchild) {
-                if ($grandchild->nodeType === XML_ELEMENT_NODE && in_array(strtolower($grandchild->nodeName), $blockTags)) {
+                if ($grandchild->nodeType === XML_ELEMENT_NODE && (in_array(strtolower($grandchild->nodeName), $blockTags) || strtolower($grandchild->nodeName) === 'img')) {
                     $hasBlockChild = true;
                     break;
                 }
             }
             if ($hasBlockChild) {
-                renderNode($pdf, $child);
+                renderNode($pdf, $child, $theme, $imageCache, $imagesInserted, $maxImages);
             } elseif (in_array($tag, ['p', 'span', 'strong', 'em', 'b', 'i', 'td', 'th'])) {
                 $pdf->MultiCell(0, 5.5, utf8ToPdf($text));
                 $pdf->Ln(1);
@@ -150,50 +280,36 @@ function renderNode($pdf, DOMNode $node) {
     }
 }
 
-$pdf = new PDF();
+$pdf = new ThemedPDF();
+$pdf->theme = $theme;
+$pdf->SetMargins(20, 10, 20);
+$pdf->SetAutoPageBreak(true, 24);
 $pdf->AddPage();
-$pdf->SetFont('Arial', 'B', 17);
-$pdf->SetTextColor(139, 92, 246);
+
+[$ra, $ga, $ba] = $theme['accent'];
+$pdf->SetFont($theme['font'], 'B', 18);
+$pdf->SetTextColor($ra, $ga, $ba);
 $pdf->MultiCell(0, 8, utf8ToPdf($idea['title']));
 $pdf->Ln(3);
 
-$pdf->SetFont('Arial', '', 11);
-$pdf->SetTextColor(20, 20, 20);
+$pdf->SetFont($theme['font'], '', 11);
+$pdf->SetTextColor(30, 30, 30);
 
 if ($rootDiv) {
-    renderNode($pdf, $rootDiv);
+    renderNode($pdf, $rootDiv, $theme, $imageCache, $imagesInserted, $MAX_IMAGES);
 } else {
-    // Recurso de segurança: se o HTML não deu para interpretar, mostra o texto simples
     $plain = trim(preg_replace('/\s+/', ' ', strip_tags($rawContent)));
     $pdf->MultiCell(0, 5.5, utf8ToPdf($plain));
 }
 
-// --- Insere as imagens reais (já vêm do Unsplash, embutidas na ideia) ---
-foreach ($contentImages as $imgUrl) {
-    try {
-        $imageData = @file_get_contents($imgUrl);
-        if (!$imageData) continue;
-
-        $imagePath = sys_get_temp_dir() . '/idefy_' . uniqid() . '.jpg';
-        file_put_contents($imagePath, $imageData);
-
-        if (file_exists($imagePath)) {
-            if ($pdf->GetY() > 230) $pdf->AddPage();
-            $pdf->Ln(4);
-            $pdf->Image($imagePath, 10, $pdf->GetY(), 190);
-            $pdf->Ln(80); // espaço aproximado ocupado pela imagem (190mm largura ~ 100-120mm altura)
-            unlink($imagePath);
-        }
-    } catch (Exception $e) {
-        error_log("Erro generate-pdf (imagem $imgUrl): " . $e->getMessage());
-        continue;
-    }
+// Limpa os ficheiros temporários das imagens
+foreach ($imageCache as $path) {
+    if ($path && file_exists($path)) @unlink($path);
 }
 
-$pdf->AddPage();
-$pdf->Ln(20);
-$pdf->SetFont('Arial', 'I', 9);
-$pdf->SetTextColor(100, 100, 100);
+$pdf->Ln(8);
+$pdf->SetFont($theme['font'], 'I', 9);
+$pdf->SetTextColor(90, 90, 90);
 $pdf->Cell(0, 5, utf8ToPdf('Gerado em: ' . date('d/m/Y H:i')), 0, 1, 'C');
 $pdf->Cell(0, 5, utf8ToPdf('© 2026 Eureka Labs - Todos os direitos reservados'), 0, 1, 'C');
 

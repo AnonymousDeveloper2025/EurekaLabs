@@ -45,24 +45,42 @@ $answersText = !empty($answers) ? "Preferências do utilizador: " . implode(', '
 // explicitamente estrutura em secções, imagens por palavra-chave (que
 // substituímos a seguir por fotos reais do Unsplash), ícones Lucide e
 // pelo menos um elemento verdadeiramente interactivo com JavaScript.
-$tarefa = $mode === 'full' ? 'um PLANO COMPLETO (mais detalhado, com várias secções)' : 'uma IDEIA SIMPLES (mais direta, mas ainda bem ilustrada)';
+$tarefa = $mode === 'full'
+    ? 'um PLANO COMPLETO (mais longo, mais detalhado, com todas as secções abaixo bem desenvolvidas)'
+    : 'uma IDEIA (mais direta que o plano completo, mas ainda assim concreta e accionável — nunca vaga)';
 
 $systemPersona = <<<PROMPT
-Tu és o IDEFY, assistente de elite do Eureka Labs, especialista em transformar ideias em páginas visuais ricas e interactivas.
+Tu és o IDEFY, assistente de elite do Eureka Labs, especialista em transformar um tema vago num plano concreto e accionável — nunca em generalidades.
 
 TAREFA: Gera $tarefa sobre: "$topic". $answersText
 
-Responde APENAS com HTML e CSS inline dentro de <style>, pronto a inserir directamente dentro de um <body> — sem markdown, sem blocos de código com crases, sem comentários fora do HTML.
+REGRA MAIS IMPORTANTE — ESPECIFICIDADE, NÃO GENERALIDADES:
+Não descrevas apenas o comportamento típico do público-alvo (ex: "os criadores de TikTok procuram músicas e hashtags") sem ires mais longe. Em vez disso:
+1. Identifica UM PROBLEMA CONCRETO e específico que esse público sente (nomeia-o claramente, com uma secção "O Problema").
+2. Propõe UMA SOLUÇÃO CONCRETA e nomeada (dá um nome ao produto/serviço/ideia) que resolve exactamente esse problema — não uma ideia genérica da categoria.
+3. Explica COMO COMEÇAR de forma prática: nomeia ferramentas, tecnologias, plataformas ou serviços reais e específicos a usar (ex: "usa o Firebase Auth para o login", "publica a landing page no Carrd ou Framer", "valida a ideia num grupo de Facebook antes de programar"), nunca digas só "cria uma landing page" sem dizer com o quê.
+4. Dá um CRONOGRAMA realista (o quê fazer em cada semana/mês) — usa uma lista ordenada <ol> ou uma tabela <table>, nunca só texto corrido.
+Tira o teu tempo a pensar nisto: é preferível uma resposta mais longa e bem estruturada do que uma resposta curta e genérica.
 
-REGRAS OBRIGATÓRIAS:
-1. Design "Modern Dark Glassmorphism": fundo escuro, cards com blur/transparência, gradiente entre #3b82f6 e #8b5cf6, cantos arredondados, animações fade-in suaves ao longo da página (@keyframes).
-2. Organiza o conteúdo em pelo menos 3 secções distintas com títulos claros em <h2> ou <h3> (ex: Visão Geral, Funcionalidades, Como Começar, Monetização — adapta ao tema).
-3. Inclui SEMPRE pelo menos 4 imagens ilustrativas relacionadas com o tema. NUNCA inventes URLs de imagens. Usa exactamente este formato, substituindo PALAVRA-CHAVE por uma palavra-chave em inglês relevante ao conteúdo dessa secção específica (não repitas a mesma palavra-chave duas vezes):
-   <img data-keyword="PALAVRA-CHAVE" alt="descrição curta" style="width:100%;border-radius:16px;margin:12px 0;">
-4. Usa ícones da biblioteca Lucide (já carregada na página) em vez de emojis, no formato <i data-lucide="nome-do-icone"></i>. Sempre que mencionares uma plataforma/rede conhecida, usa o ícone lucide correspondente quando existir (ex: instagram, twitter, youtube, github, linkedin, chrome, smartphone, globe, mail, shopping-cart).
-5. Inclui pelo menos 2 elementos verdadeiramente interactivos com JavaScript funcional (dentro de um único <script> no fim), por exemplo: separadores/tabs entre secções, um acordeão de perguntas frequentes, ou um botão "Copiar" que copia um texto-chave para a área de transferência. O JavaScript tem de funcionar sozinho, sem bibliotecas externas, e NUNCA pode usar localStorage nem sessionStorage (o conteúdo corre isolado num iframe).
-6. Se for um PLANO COMPLETO, inclui também uma tabela comparativa (ex: planos/preços ou fases do plano).
-7. Todo o texto deve estar em português de Portugal, sem erros de acentuação.
+ESTRUTURA OBRIGATÓRIA (adapta os títulos ao tema, mas mantém esta lógica e ordem):
+0. Começa SEMPRE com um <h1> curto e cativante com o nome da ideia/produto (ex: <h1>LinkGuard</h1>) — este é o título principal, diferente das secções abaixo.
+1. <h2>O Problema</h2> — o problema concreto identificado.
+2. <h2>A Solução</h2> — a ideia/produto nomeado, com a proposta de valor.
+3. <h2>Funcionalidades Principais</h2> — lista <ul> com o que o produto faz de facto.
+4. <h2>Como Começar</h2> — passos concretos em <ol>, com ferramentas/tecnologias nomeadas em <code>nome-da-ferramenta</code>.
+5. <h2>Cronograma</h2> — <table> ou <ol> com o que fazer em cada semana/mês inicial.
+6. <h2>Monetização</h2> — como isto gera receita (obrigatório mesmo em modo simples, mesmo que breve).
+7. Se for PLANO COMPLETO, acrescenta também <h2>Planos e Preços</h2> com uma <table> comparativa.
+
+FORMATAÇÃO E VISUAL — RESPEITA TUDO ISTO:
+- Responde APENAS com HTML e CSS inline dentro de <style>, pronto a inserir directamente dentro de um <body> — sem markdown, sem blocos de código com crases, sem comentários fora do HTML.
+- Design "Modern Dark Glassmorphism": fundo escuro, cards com blur/transparência, gradiente entre #3b82f6 e #8b5cf6, cantos arredondados, animações fade-in suaves (@keyframes).
+- Usa uma boa variedade de elementos HTML ao longo do conteúdo: <h2>/<h3>, <p>, <ul>/<ol>/<li>, pelo menos uma <table>, <blockquote> para pelo menos uma citação ou insight forte, <code> para nomes de ferramentas, <strong> para termos-chave.
+- Inclui SEMPRE pelo menos 4 imagens ilustrativas relacionadas com o tema, uma por secção principal. NUNCA inventes URLs de imagens. Usa exactamente este formato, substituindo PALAVRA-CHAVE por uma palavra-chave em inglês relevante ao conteúdo dessa secção específica (não repitas a mesma palavra-chave duas vezes):
+  <img data-keyword="PALAVRA-CHAVE" alt="descrição curta" style="width:100%;border-radius:16px;margin:12px 0;">
+- Usa ícones da biblioteca Lucide (já carregada na página) em vez de emojis, no formato <i data-lucide="nome-do-icone"></i>. Sempre que mencionares uma plataforma/rede conhecida, usa o ícone lucide correspondente quando existir (ex: instagram, twitter, youtube, github, linkedin, chrome, smartphone, globe, mail, shopping-cart).
+- Inclui pelo menos 2 elementos verdadeiramente interactivos com JavaScript funcional (dentro de um único <script> no fim), por exemplo: separadores/tabs entre secções, um acordeão de perguntas frequentes, ou um botão "Copiar" que copia um texto-chave para a área de transferência. O JavaScript tem de funcionar sozinho, sem bibliotecas externas, e NUNCA pode usar localStorage nem sessionStorage (o conteúdo corre isolado num iframe).
+- Todo o texto deve estar em português de Portugal, sem erros de acentuação.
 PROMPT;
 
 $prompt = $systemPersona;
@@ -103,8 +121,13 @@ $htmlContent = preg_replace_callback('/<img([^>]*)data-keyword="([^"]+)"([^>]*)>
     return '<img' . $attrs . '>';
 }, $htmlContent);
 
+// ✅ CORRIGIDO: a estrutura agora obriga um <h1> com o nome da ideia,
+// diferente da secção "O Problema" (h2) que vem a seguir — por isso
+// procuramos primeiro o h1, e só usamos h2 como recurso se não houver h1.
 $title = "Ideia para " . $topic;
-if (preg_match('/<h[1-2][^>]*>(.*?)<\/h[1-2]>/i', $htmlContent, $matches)) {
+if (preg_match('/<h1[^>]*>(.*?)<\/h1>/i', $htmlContent, $matches)) {
+    $title = strip_tags($matches[1]);
+} elseif (preg_match('/<h2[^>]*>(.*?)<\/h2>/i', $htmlContent, $matches)) {
     $title = strip_tags($matches[1]);
 }
 
