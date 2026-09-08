@@ -2,7 +2,7 @@
 /**
  * GENERATE PDF — EUREKA LABS
  *
- * ✅ CORRIGIDO: Acesso a $lMargin protegido. Agora usa $contentMargin
+ * ✅ CORRIGIDO: Fundo colorido em todas as páginas + lMargin
  */
 
 require_once '../config.php'; // já trata CORS e OPTIONS — não duplicar
@@ -73,12 +73,18 @@ function getPdfTheme($category) {
 
 class ThemedPDF extends FPDF {
     public $theme;
-    public $contentMargin = 20; // Margem pública para usar fora da classe
+    public $contentMargin = 20; // Margem pública
     private $margin = 15;
 
+    function __construct() {
+        parent::__construct();
+        $this->SetAutoPageBreak(true, 24);
+    }
+
     public function Header() {
+        // PINTA O FUNDO EM TODA PÁGINA
         $this->SetFillColor($this->theme['bg'][0], $this->theme['bg'][1], $this->theme['bg'][2]);
-        $this->Rect(0, 0, 210, 297, 'F');
+        $this->Rect(0, 0, $this->GetPageWidth(), $this->GetPageHeight(), 'F');
 
         [$r, $g, $b] = $this->theme['accent'];
         $this->SetDrawColor($r, $g, $b);
@@ -169,7 +175,7 @@ function insertPdfImage($pdf, $url, &$imageCache, &$imagesInserted, $maxImages) 
         $path = $imageCache[$url];
         if (!$path ||!file_exists($path)) return;
 
-        $usableWidth = $pdf->GetPageWidth() - 2 * $pdf->contentMargin; // CORRIGIDO
+        $usableWidth = $pdf->GetPageWidth() - 2 * $pdf->contentMargin;
         $displayHeight = $usableWidth * 0.6;
         $dims = @getimagesize($path);
         if ($dims && $dims[0] > 0) {
@@ -215,14 +221,14 @@ function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted,
             $pdf->Ln(1);
         } elseif ($tag === 'blockquote' || $tag === 'q') {
             $startY = $pdf->GetY();
-            $pdf->SetX($pdf->contentMargin + 8); // CORRIGIDO
+            $pdf->SetX($pdf->contentMargin + 8);
             $pdf->SetFont($theme['font'], 'I', 11);
             $pdf->SetTextColor(70, 70, 70);
             $pdf->MultiCell(0, 6, utf8ToPdf('" '. $text. ' "'));
             $endY = $pdf->GetY();
             $pdf->SetDrawColor($r, $g, $b);
             $pdf->SetLineWidth(1);
-            $pdf->Line($pdf->contentMargin + 4, $startY + 1, $pdf->contentMargin + 4, $endY - 1); // CORRIGIDO
+            $pdf->Line($pdf->contentMargin + 4, $startY + 1, $pdf->contentMargin + 4, $endY - 1);
             $pdf->SetLineWidth(0.2);
             $pdf->SetFont($theme['font'], '', 11);
             $pdf->SetTextColor(30, 30, 30);
@@ -257,6 +263,10 @@ $pdf->theme = $theme;
 $pdf->SetMargins(20, 10, 20);
 $pdf->SetAutoPageBreak(true, 24);
 $pdf->AddPage();
+
+// Define a cor de texto e fill padrão pra não vir branco
+$pdf->SetFillColor($theme['bg'][0], $theme['bg'][1], $theme['bg'][2]);
+$pdf->SetTextColor(30, 30, 30);
 
 [$ra, $ga, $ba] = $theme['accent'];
 $pdf->SetFont($theme['font'], 'B', 18);
