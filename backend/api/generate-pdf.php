@@ -2,28 +2,12 @@
 /**
  * GENERATE PDF — EUREKA LABS
  *
- * ✅ CORRIGIDO (rondas anteriores): PDO em vez de mysqli, requireAuth() em
- * vez de confiar no cliente, payload alinhado com o result.html, CORS
- * duplicado removido, blocos <style>/<script> removidos por completo,
- * texto convertido de UTF-8 para o formato que o FPDF entende.
- *
- * ✅ CORRIGIDO NESTA RONDA:
- * 1) "Todas as imagens numa página" — antes extraíamos todas as <img> do
- *    conteúdo e colávamos-as todas juntas no fim. Agora cada <img> é
- *    processada NO SEU LUGAR, à medida que aparece no texto, por isso
- *    ficam espalhadas pelas secções a que pertencem.
- * 2) Fundo branco — cada PDF tem agora uma cor de fundo e uma moldura
- *    decorativa, escolhidas por tema (ver getPdfTheme()).
- * 3) Tipo de letra sempre igual — agora varia (Arial/Times/Courier)
- *    consoante o tema da ideia.
- * 4) Títulos e citações sem destaque — títulos ganham um marcador
- *    quadrado colorido; citações (<blockquote>/<q>) ganham itálico,
- *    aspas e uma barra vertical colorida à esquerda.
+ * ✅ CORRIGIDO: Acesso a $lMargin protegido. Agora usa $contentMargin
  */
 
 require_once '../config.php'; // já trata CORS e OPTIONS — não duplicar
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD']!== 'POST') {
     http_response_code(405);
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
@@ -33,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $userId = requireAuth();
 
 $input = json_decode(file_get_contents('php://input'), true);
-$ideaId = intval($input['id'] ?? 0);
+$ideaId = intval($input['id']?? 0);
 
 if (!$ideaId) {
     http_response_code(400);
@@ -44,7 +28,7 @@ if (!$ideaId) {
 
 try {
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT id, title, content, category FROM ideas WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("SELECT id, title, content, category FROM ideas WHERE id =? AND user_id =?");
     $stmt->execute([$ideaId, $userId]);
     $idea = $stmt->fetch();
 
@@ -55,7 +39,7 @@ try {
         exit;
     }
 } catch (Exception $e) {
-    error_log("Erro generate-pdf (buscar ideia): " . $e->getMessage());
+    error_log("Erro generate-pdf (buscar ideia): ". $e->getMessage());
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Erro ao carregar a ideia.']);
@@ -66,45 +50,36 @@ require_once '../vendor/fpdf/fpdf.php';
 
 function utf8ToPdf($text) {
     $converted = @iconv('UTF-8', 'CP1252//TRANSLIT', $text);
-    return $converted !== false ? $converted : preg_replace('/[^\x20-\x7E]/', '', $text);
+    return $converted!== false? $converted : preg_replace('/[^\x20-\x7E]/', '', $text);
 }
 
-/**
- * Escolhe um "tema" visual (fundo, cor de destaque, tipo de letra, estilo
- * de moldura) consoante a categoria da ideia. Categorias sem tema definido
- * caem num tema escolhido de forma consistente (mesma categoria = mesmo
- * visual sempre) a partir de uma lista de reserva.
- */
 function getPdfTheme($category) {
     $themes = [
-        'tecnologia'   => ['bg' => [233, 240, 250], 'accent' => [37, 99, 235],  'font' => 'Courier', 'border' => 'solid'],
-        'negocio'      => ['bg' => [231, 240, 237], 'accent' => [13, 118, 105], 'font' => 'Arial',   'border' => 'double'],
-        'criatividade' => ['bg' => [250, 235, 245], 'accent' => [219, 39, 119], 'font' => 'Times',   'border' => 'dashed'],
-        'aventura'     => ['bg' => [237, 243, 227], 'accent' => [77, 124, 15],  'font' => 'Arial',   'border' => 'solid'],
-        'culinaria'    => ['bg' => [253, 240, 220], 'accent' => [194, 108, 8],  'font' => 'Times',   'border' => 'double'],
-        'bem-estar'    => ['bg' => [239, 236, 250], 'accent' => [109, 40, 217], 'font' => 'Times',   'border' => 'dashed'],
-        'viagem'       => ['bg' => [224, 242, 246], 'accent' => [8, 132, 155],  'font' => 'Arial',   'border' => 'solid'],
-        'geral'        => ['bg' => [235, 236, 245], 'accent' => [79, 70, 229],  'font' => 'Arial',   'border' => 'solid'],
+        'tecnologia' => ['bg' => [233, 240, 250], 'accent' => [37, 99, 235], 'font' => 'Courier', 'border' => 'solid'],
+        'negocio' => ['bg' => [231, 240, 237], 'accent' => [13, 118, 105], 'font' => 'Arial', 'border' => 'double'],
+        'criatividade' => ['bg' => [250, 235, 245], 'accent' => [219, 39, 119], 'font' => 'Times', 'border' => 'dashed'],
+        'aventura' => ['bg' => [237, 243, 227], 'accent' => [77, 124, 15], 'font' => 'Arial', 'border' => 'solid'],
+        'culinaria' => ['bg' => [253, 240, 220], 'accent' => [194, 108, 8], 'font' => 'Times', 'border' => 'double'],
+        'bem-estar' => ['bg' => [239, 236, 250], 'accent' => [109, 40, 217], 'font' => 'Times', 'border' => 'dashed'],
+        'viagem' => ['bg' => [224, 242, 246], 'accent' => [8, 132, 155], 'font' => 'Arial', 'border' => 'solid'],
+        'geral' => ['bg' => [235, 236, 245], 'accent' => [79, 70, 229], 'font' => 'Arial', 'border' => 'solid'],
     ];
     $key = strtolower(trim($category));
     if (isset($themes[$key])) return $themes[$key];
 
-    // Categoria não mapeada: escolhe um tema de forma consistente (mesma
-    // categoria dá sempre o mesmo resultado) em vez de deixar tudo cinzento.
     $fallback = array_values($themes);
     return $fallback[crc32($key) % count($fallback)];
 }
 
 class ThemedPDF extends FPDF {
     public $theme;
+    public $contentMargin = 20; // Margem pública para usar fora da classe
     private $margin = 15;
 
     public function Header() {
-        // Fundo colorido (nunca branco puro)
         $this->SetFillColor($this->theme['bg'][0], $this->theme['bg'][1], $this->theme['bg'][2]);
         $this->Rect(0, 0, 210, 297, 'F');
 
-        // Moldura decorativa — o estilo varia consoante o tema
         [$r, $g, $b] = $this->theme['accent'];
         $this->SetDrawColor($r, $g, $b);
         $m = $this->margin - 5;
@@ -137,7 +112,7 @@ class ThemedPDF extends FPDF {
         [$r, $g, $b] = $this->theme['accent'];
         $this->SetFont($this->theme['font'], 'I', 8);
         $this->SetTextColor($r, $g, $b);
-        $this->Cell(0, 10, utf8ToPdf('Página ' . $this->PageNo()), 0, 0, 'C');
+        $this->Cell(0, 10, utf8ToPdf('Página '. $this->PageNo()), 0, 0, 'C');
     }
 
     public function dashedRect($x, $y, $w, $h, $dash, $gap) {
@@ -164,21 +139,20 @@ class ThemedPDF extends FPDF {
     }
 }
 
-$theme = getPdfTheme($idea['category'] ?? 'geral');
+$theme = getPdfTheme($idea['category']?? 'geral');
 
-// --- Prepara o conteúdo: remove <style>/<script> por completo ---
 $rawContent = $idea['content'];
 $rawContent = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $rawContent);
 $rawContent = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $rawContent);
 
 libxml_use_internal_errors(true);
 $dom = new DOMDocument();
-$dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $rawContent . '</div>');
+$dom->loadHTML('<?xml encoding="utf-8"?><div>'. $rawContent. '</div>');
 libxml_clear_errors();
 $rootDiv = $dom->getElementsByTagName('div')->item(0);
 
 $blockTags = ['h1', 'h2', 'h3', 'h4', 'p', 'div', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'section', 'article', 'blockquote'];
-$imageCache = []; // evita descarregar a mesma imagem duas vezes
+$imageCache = [];
 $imagesInserted = 0;
 $MAX_IMAGES = 6;
 
@@ -188,15 +162,15 @@ function insertPdfImage($pdf, $url, &$imageCache, &$imagesInserted, $maxImages) 
         if (!isset($imageCache[$url])) {
             $data = @file_get_contents($url);
             if (!$data) { $imageCache[$url] = false; return; }
-            $path = sys_get_temp_dir() . '/idefy_' . md5($url) . '.jpg';
+            $path = sys_get_temp_dir(). '/idefy_'. md5($url). '.jpg';
             file_put_contents($path, $data);
             $imageCache[$url] = $path;
         }
         $path = $imageCache[$url];
-        if (!$path || !file_exists($path)) return;
+        if (!$path ||!file_exists($path)) return;
 
-        $usableWidth = $pdf->GetPageWidth() - 2 * 20;
-        $displayHeight = $usableWidth * 0.6; // valor de reserva, caso getimagesize() falhe
+        $usableWidth = $pdf->GetPageWidth() - 2 * $pdf->contentMargin; // CORRIGIDO
+        $displayHeight = $usableWidth * 0.6;
         $dims = @getimagesize($path);
         if ($dims && $dims[0] > 0) {
             $displayHeight = $usableWidth * ($dims[1] / $dims[0]);
@@ -207,17 +181,16 @@ function insertPdfImage($pdf, $url, &$imageCache, &$imagesInserted, $maxImages) 
         $pdf->SetY($pdf->GetY() + $displayHeight + 4);
         $imagesInserted++;
     } catch (Exception $e) {
-        error_log("Erro generate-pdf (imagem $url): " . $e->getMessage());
+        error_log("Erro generate-pdf (imagem $url): ". $e->getMessage());
     }
 }
 
 function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted, $maxImages) {
     global $blockTags;
     foreach ($node->childNodes as $child) {
-        if ($child->nodeType !== XML_ELEMENT_NODE) continue;
+        if ($child->nodeType!== XML_ELEMENT_NODE) continue;
         $tag = strtolower($child->nodeName);
 
-        // ✅ Imagens são tratadas NO SEU LUGAR, não todas no fim
         if ($tag === 'img') {
             $src = $child->getAttribute('src');
             if ($src) insertPdfImage($pdf, $src, $imageCache, $imagesInserted, $maxImages);
@@ -231,11 +204,10 @@ function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted,
 
         if (in_array($tag, ['h1', 'h2', 'h3', 'h4'])) {
             $pdf->Ln(4);
-            // Marcador quadrado colorido antes do título
             $pdf->SetFillColor($r, $g, $b);
             $pdf->Rect($pdf->GetX(), $pdf->GetY() + 2, 3.2, 3.2, 'F');
             $pdf->SetX($pdf->GetX() + 6);
-            $pdf->SetFont($theme['font'], 'B', $tag === 'h1' ? 16 : ($tag === 'h2' ? 14 : 12));
+            $pdf->SetFont($theme['font'], 'B', $tag === 'h1'? 16 : ($tag === 'h2'? 14 : 12));
             $pdf->SetTextColor($r, $g, $b);
             $pdf->MultiCell(0, 7, utf8ToPdf($text));
             $pdf->SetFont($theme['font'], '', 11);
@@ -243,14 +215,14 @@ function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted,
             $pdf->Ln(1);
         } elseif ($tag === 'blockquote' || $tag === 'q') {
             $startY = $pdf->GetY();
-            $pdf->SetX($pdf->lMargin + 8);
+            $pdf->SetX($pdf->contentMargin + 8); // CORRIGIDO
             $pdf->SetFont($theme['font'], 'I', 11);
             $pdf->SetTextColor(70, 70, 70);
-            $pdf->MultiCell(0, 6, utf8ToPdf('" ' . $text . ' "'));
+            $pdf->MultiCell(0, 6, utf8ToPdf('" '. $text. ' "'));
             $endY = $pdf->GetY();
             $pdf->SetDrawColor($r, $g, $b);
             $pdf->SetLineWidth(1);
-            $pdf->Line($pdf->lMargin + 4, $startY + 1, $pdf->lMargin + 4, $endY - 1);
+            $pdf->Line($pdf->contentMargin + 4, $startY + 1, $pdf->contentMargin + 4, $endY - 1); // CORRIGIDO
             $pdf->SetLineWidth(0.2);
             $pdf->SetFont($theme['font'], '', 11);
             $pdf->SetTextColor(30, 30, 30);
@@ -302,7 +274,6 @@ if ($rootDiv) {
     $pdf->MultiCell(0, 5.5, utf8ToPdf($plain));
 }
 
-// Limpa os ficheiros temporários das imagens
 foreach ($imageCache as $path) {
     if ($path && file_exists($path)) @unlink($path);
 }
@@ -310,17 +281,17 @@ foreach ($imageCache as $path) {
 $pdf->Ln(8);
 $pdf->SetFont($theme['font'], 'I', 9);
 $pdf->SetTextColor(90, 90, 90);
-$pdf->Cell(0, 5, utf8ToPdf('Gerado em: ' . date('d/m/Y H:i')), 0, 1, 'C');
+$pdf->Cell(0, 5, utf8ToPdf('Gerado em: '. date('d/m/Y H:i')), 0, 1, 'C');
 $pdf->Cell(0, 5, utf8ToPdf('© 2026 Eureka Labs - Todos os direitos reservados'), 0, 1, 'C');
 
 try {
-    $stmt = $conn->prepare("UPDATE ideas SET pdf_generated = TRUE, pdf_generated_at = NOW() WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("UPDATE ideas SET pdf_generated = TRUE, pdf_generated_at = NOW() WHERE id =? AND user_id =?");
     $stmt->execute([$ideaId, $userId]);
 } catch (Exception $e) {
-    error_log("Erro generate-pdf (marcar pdf_generated): " . $e->getMessage());
+    error_log("Erro generate-pdf (marcar pdf_generated): ". $e->getMessage());
 }
 
 header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="ideia-' . $ideaId . '.pdf"');
-$pdf->Output('D', 'ideia-' . $ideaId . '.pdf');
+header('Content-Disposition: attachment; filename="ideia-'. $ideaId. '.pdf"');
+$pdf->Output('D', 'ideia-'. $ideaId. '.pdf');
 ?>
