@@ -5,7 +5,7 @@ header('Content-Type: text/html; charset=utf-8');
 $repoOwner = "AnonymousDeveloper2025"; // <-- teu username GitHub
 $repoName  = "AngoNet-page";           // <-- nome do repositório EXATO
 $branch    = "main";                   // <-- main ou master
-$token     = "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";  // <-- teu PAT com scope "repo"
+$token     = "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";  // <-- teu PAT com scope "repo"
 
 // Função para enviar ficheiro para GitHub com retorno de erro
 function githubUpload($fileName, $fileData, $message, $token, $repoOwner, $repoName, $branch, $sha = null) {
