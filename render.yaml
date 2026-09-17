@@ -19,5 +19,7 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: GitHub_token
+        sync: false
       - key: FRONTEND_URL
         value: "https://anonymousdeveloper2025.github.io"
