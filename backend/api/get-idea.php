@@ -18,7 +18,7 @@ if (!$id) {
 
 try {
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT id, category, title, content, saved, created_at FROM ideas WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("SELECT id, category, title, content, saved, mode, flow, created_at FROM ideas WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $userId]);
     $idea = $stmt->fetch();
 
