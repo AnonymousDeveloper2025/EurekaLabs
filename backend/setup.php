@@ -56,6 +56,8 @@ try {
     runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS saved BOOLEAN DEFAULT FALSE");
     runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated BOOLEAN DEFAULT FALSE");
     runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS pdf_generated_at TIMESTAMP");
+    runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS mode VARCHAR(20) DEFAULT 'simple'");
+    runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS flow VARCHAR(20) DEFAULT 'develop'");
 
     echo json_encode(["success" => true, "message" => "Tabelas criadas/actualizadas com sucesso no PostgreSQL!"]);
 } catch (Exception $e) {
