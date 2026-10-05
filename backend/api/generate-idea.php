@@ -5,7 +5,7 @@ if($topic===''||!is_array($answers)){http_response_code(400);echo json_encode(['
 $answersText='';foreach($answers as $i=>$a){$answersText.="\nResposta ".($i+1).": ".trim((string)$a);}
 $flowText=$flow==='enhance'?'Aprimora a ideia existente: preserva a intenção original, mas torna a proposta mais específica, viável, diferenciada e accionável.':'Desenvolve a ideia desde a base, usando as respostas para descobrir o melhor caminho.';
 $depth=$mode==='full'?'PLANO COMPLETO, aprofundado, com prioridades, recursos, riscos, monetização e um calendário visual por dias.':'IDEIA SIMPLES, curta mas concreta, com problema, solução, primeiros passos e um mini-cronograma.';
-$calendar=$mode==='full'?"Inclui obrigatoriamente uma secção <section class=\"plan-calendar\"><h2>Calendário de execução</h2> com 7 blocos de for em dias, e mais blocos de for mês<article class=\"calendar-item\" data-day=\"1\"> até data-day=\"7\">. Cada bloco deve ter título, tarefa e critério de conclusão.":"Inclui uma secção <h2>Primeiros passos</h2> com uma lista ordenada accionável.";
+$calendar=$mode==='full'?"Inclui obrigatoriamente uma secção <section class=\"plan-calendar\"><h2>Calendário de execução</h2> com 7 blocos <article class=\"calendar-item\" data-day=\"1\"> até data-day=\"7\">. Cada bloco deve ter título, tarefa e critério de conclusão.":"Inclui uma secção <h2>Primeiros passos</h2> com uma lista ordenada accionável.";
 $prompt=<<<PROMPT
 Tu és o IDEFY, assistente de elite do Eureka Labs. $flowText
 IDEIA ORIGINAL: "$topic"
