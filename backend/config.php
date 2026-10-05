@@ -14,7 +14,7 @@ define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
 define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
 // ✅ MODELO CONFIRMADO QUE FUNCIONA:
-define('GEMINI_MODEL', 'gemini-2.5-flash');
+define('GEMINI_MODEL', 'gemini-2.0-flash');
 
 // 2b. Unsplash (opcional — usado no PDF; se vazia, cai automaticamente
 // no Picsum como imagem de reserva, que nunca falha)
