@@ -16,7 +16,7 @@ if (empty($geminiApiKey)) {
     ]));
 }
 
-$model = 'gemini-3.8-flash';
+$model = 'gemini-2.5-flash';
 $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($geminiApiKey);
 
 $testPrompt = "Responde em português com um parágrafo curto: O que é o Eureka Labs?";
