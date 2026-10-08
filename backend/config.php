@@ -1,11 +1,13 @@
 <?php
 /**
  * EUREKA LABS - CONFIGURAÇÃO FINAL
- * Versão: 3.0 - Com Gemini 2.5 Flash (FUNCIONA!)
+ * Versão: 3.1 - Com Gemini 2.5 Pro
  */
 
 // 1. Configurações de Base de Dados (PostgreSQL)
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+// Em produção, prefere configurar DB_HOST como variável de ambiente.
+// O fallback abaixo permite testar imediatamente com a base Neon fornecida.
+define('DB_HOST', getenv('DB_HOST') ?: 'postgresql://eureka_owner:npg_sYzWdAPB4S7M@ep-divine-sun-b4nfhj4g-pooler.c-6.us-east-2.aws.neon.tech/eureka?sslmode=require&channel_binding=require');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: 'password');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
@@ -13,8 +15,8 @@ define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 // 2. Configurações da API Gemini (Google - DIRECTAMENTE)
 define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
 define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
-// ✅ MODELO CONFIRMADO QUE FUNCIONA:
-define('GEMINI_MODEL', 'gemini-3.8-flash');
+// Modelo Pro estável documentado pela Google; pode ser substituído por GEMINI_MODEL no ambiente:
+define('GEMINI_MODEL', getenv('GEMINI_MODEL') ?: 'gemini-2.5-pro');
 
 // 2b. Unsplash (opcional — usado no PDF; se vazia, cai automaticamente
 // no Picsum como imagem de reserva, que nunca falha)
@@ -54,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 function getDBConnection() {
     try {
         $dbUrl = DB_HOST;
+        $useSsl = false;
         if (strpos($dbUrl, 'postgresql://') === 0 || strpos($dbUrl, 'postgres://') === 0) {
             $db = parse_url($dbUrl);
             $host = $db['host'];
@@ -61,6 +64,7 @@ function getDBConnection() {
             $dbname = ltrim($db['path'], '/');
             $user = $db['user'];
             $pass = $db['pass'];
+            $useSsl = true;
         } else {
             $host = DB_HOST;
             $port = 5432;
@@ -69,7 +73,7 @@ function getDBConnection() {
             $pass = DB_PASS;
         }
         
-        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname" . ($useSsl ? ';sslmode=require' : '');
         $pdo = new PDO($dsn, $user, $pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -111,7 +115,7 @@ function callGeminiAPI($prompt) {
             'maxOutputTokens' => 8192,
             'temperature' => 0.6,
             'thinkingConfig' => [
-                // ✅ CRÍTICO: Gemini 2.5 Flash "pensa" internamente por padrão,
+                // Gemini 2.5 Pro pode pensar internamente por padrão,
                 // consumindo tokens do MESMO orçamento (maxOutputTokens) antes
                 // de escrever a resposta visível. Com prompts longos e
                 // detalhados, isso pode consumir quase todo o orçamento e
