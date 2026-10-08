@@ -4,12 +4,33 @@
  * Versão: 3.1 - Com Gemini 2.5 Pro
  */
 
+/**
+ * Carrega backend/.env sem depender de Composer ou de uma biblioteca externa.
+ * Variáveis já existentes no hosting têm prioridade sobre o ficheiro local.
+ */
+function loadLocalEnv($file) {
+    if (!is_readable($file)) return;
+
+    foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#') continue;
+        if (!preg_match('/^(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*)$/', $line, $match)) continue;
+
+        $key = $match[1];
+        $value = trim($match[2]);
+        if (strlen($value) >= 2 && (($value[0] === '"' && substr($value, -1) === '"') || ($value[0] === "'" && substr($value, -1) === "'"))) {
+            $value = substr($value, 1, -1);
+        }
+        if (getenv($key) === false) putenv($key . '=' . $value);
+    }
+}
+
+loadLocalEnv(__DIR__ . DIRECTORY_SEPARATOR . '.env');
+
 // 1. Configurações de Base de Dados (PostgreSQL)
-// Em produção, prefere configurar DB_HOST como variável de ambiente.
-// O fallback abaixo permite testar imediatamente com a base Neon fornecida.
-define('DB_HOST', getenv('DB_HOST') ?: 'postgresql://eureka_owner:npg_sYzWdAPB4S7M@ep-divine-sun-b4nfhj4g-pooler.c-6.us-east-2.aws.neon.tech/eureka?sslmode=require&channel_binding=require');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: 'password');
+define('DB_HOST', getenv('DB_HOST') ?: '');
+define('DB_USER', getenv('DB_USER') ?: '');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
 // 2. Configurações da API Gemini (Google - DIRECTAMENTE)
@@ -45,7 +66,7 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
 header('Access-Control-Max-Age: 3600');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
