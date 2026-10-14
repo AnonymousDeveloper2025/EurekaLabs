@@ -1,7 +1,7 @@
 <?php
 /**
- * EUREKA LABS - CONFIGURAÇÃO FINAL COM ROTAÇÃO DE CHAVES E MODELOS
- * Versão: 3.2
+ * EUREKA LABS - CONFIGURAÇÃO FINAL COM ROTAÇÃO DE CHAVES E MODELOS (INCLUINDO GEMMA)
+ * Versão: 3.3
  */
 
 function loadLocalEnv($file) {
@@ -29,24 +29,25 @@ define('DB_USER', getenv('DB_USER') ?: '');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// 2. Configurações das Múltiplas Chaves e Modelos da API Gemini
-// Cada chave pode ser configurada no seu arquivo .env
+// 2. Configurações das Múltiplas Chaves da API Gemini
 define('GEMINI_API_KEYS', [
     getenv('GEMINI_API_KEY') ?: '',   // Chave Principal
     getenv('Gemini2_key') ?: '',      // Segunda Chave de Reserva
     getenv('Gemini3_key') ?: ''       // Terceira Chave de Reserva
 ]);
 
-// Lista de modelos a testar em cascata por cada chave
+// 2b. Lista expandida de modelos a testar em cascata (incluindo Gemini e Gemma)
 define('GEMINI_MODELS', [
     'models/gemini-3.8-flash',
     'models/gemini-3.5-flash-lite',
-    'models/gemini-2.5-flash'
+    'models/gemini-2.5-flash',
+    'models/gemma-4-26b-a4b-it',
+    'models/gemma-4-31b-it'
 ]);
 
 define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
 
-// 2b. Unsplash (opcional)
+// 2c. Unsplash (opcional)
 define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: '');
 
 // 3. Middleware de CORS
@@ -111,10 +112,10 @@ function getDBConnection() {
 }
 
 /**
- * Chamada à API Gemini com rotação automática de Chaves e Modelos
+ * Chamada à API com rotação inteligente em cascata:
+ * Percorre cada Chave -> para cada chave, testa cada Modelo (Gemini e Gemma).
  */
 function callGeminiAPI($prompt) {
-    $apiKeys = GEMINI_MODELS; // placeholder para iteração correta abaixo
     $keys = GEMINI_API_KEYS;
     $models = GEMINI_MODELS;
 
@@ -134,11 +135,11 @@ function callGeminiAPI($prompt) {
         ]
     ];
 
-    // Percorre cada chave disponível
+    // 1. Itera sobre cada chave de API disponível
     foreach ($keys as $keyIndex => $apiKey) {
-        if (empty($apiKey)) continue; // Ignora se a chave estiver vazia no .env
+        if (empty($apiKey)) continue; // Ignora se a chave estiver vazia
 
-        // Para cada chave, tenta os modelos em ordem de preferência
+        // 2. Para a chave atual, testa os modelos em ordem de prioridade
         foreach ($models as $modelName) {
             $url = GEMINI_API_BASE . '/' . $modelName . ':generateContent?key=' . urlencode($apiKey);
 
@@ -157,7 +158,7 @@ function callGeminiAPI($prompt) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            // Se a requisição for bem-sucedida (HTTP 200), processa e retorna
+            // Se a requisição for bem-sucedida (HTTP 200), valida e retorna
             if ($httpCode === 200) {
                 $responseData = json_decode($response, true);
                 if ($responseData && isset($responseData['candidates'][0])) {
@@ -188,12 +189,12 @@ function callGeminiAPI($prompt) {
                 }
             }
 
-            // Se deu erro de limite (429) ou indisponibilidade, regista no log e tenta o próximo modelo/chave
-            error_log("Aviso: Chave #{$keyIndex} com o modelo {$modelName} falhou (HTTP $httpCode). Tentando alternativa...");
+            // Regista a falha e prossegue para o próximo modelo/chave
+            error_log("Aviso: Chave " . ($keyIndex + 1) . " com o modelo {$modelName} falhou (HTTP $httpCode). Tentando próximo...");
         }
     }
 
-    error_log("Erro crítico: Todas as chaves e modelos do Gemini falharam ou esgotaram as cotas.");
+    error_log("Erro crítico: Todas as chaves e modelos (Gemini e Gemma) falharam ou esgotaram as cotas.");
     return null;
 }
 
