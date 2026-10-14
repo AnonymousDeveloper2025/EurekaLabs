@@ -1,13 +1,9 @@
 <?php
 /**
- * EUREKA LABS - CONFIGURAÇÃO FINAL
- * Versão: 3.1 - Com Gemini 2.5 Pro
+ * EUREKA LABS - CONFIGURAÇÃO FINAL COM ROTAÇÃO DE CHAVES E MODELOS
+ * Versão: 3.2
  */
 
-/**
- * Carrega backend/.env sem depender de Composer ou de uma biblioteca externa.
- * Variáveis já existentes no hosting têm prioridade sobre o ficheiro local.
- */
 function loadLocalEnv($file) {
     if (!is_readable($file)) return;
 
@@ -33,14 +29,24 @@ define('DB_USER', getenv('DB_USER') ?: '');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// 2. Configurações da API Gemini (Google - DIRECTAMENTE)
-define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
-define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
-// Modelo Pro estável documentado pela Google; pode ser substituído por GEMINI_MODEL no ambiente:
-define('models/gemma-4-26b-a4b-it');
+// 2. Configurações das Múltiplas Chaves e Modelos da API Gemini
+// Cada chave pode ser configurada no seu arquivo .env
+define('GEMINI_API_KEYS', [
+    getenv('GEMINI_API_KEY') ?: '',   // Chave Principal
+    getenv('Gemini2_key') ?: '',      // Segunda Chave de Reserva
+    getenv('Gemini3_key') ?: ''       // Terceira Chave de Reserva
+]);
 
-// 2b. Unsplash (opcional — usado no PDF; se vazia, cai automaticamente
-// no Picsum como imagem de reserva, que nunca falha)
+// Lista de modelos a testar em cascata por cada chave
+define('GEMINI_MODELS', [
+    'models/gemini-3.8-flash',
+    'models/gemini-3.5-flash-lite',
+    'models/gemini-2.5-flash'
+]);
+
+define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
+
+// 2b. Unsplash (opcional)
 define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: '');
 
 // 3. Middleware de CORS
@@ -58,10 +64,6 @@ if (in_array($origin, $allowed_origins) || preg_match('/github\.io$/', parse_url
     header("Access-Control-Allow-Origin: *");
 }
 
-// ✅ CORRIGIDO: Removido 'Access-Control-Allow-Credentials: true'.
-// Combinar "Allow-Origin: *" com "Allow-Credentials: true" é PROIBIDO pelo browser
-// e faz bloquear a resposta inteira (aparece como "Failed to fetch" no fetch()).
-// A app usa token JWT manual (não cookies), por isso este header nem é necessário.
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
 header('Access-Control-Max-Age: 3600');
@@ -109,19 +111,13 @@ function getDBConnection() {
 }
 
 /**
- * Chamada à API Gemini (Google - DIRECTAMENTE)
+ * Chamada à API Gemini com rotação automática de Chaves e Modelos
  */
 function callGeminiAPI($prompt) {
-    $apiKey = GEMINI_API_KEY;
-    
-    if (empty($apiKey)) {
-        error_log("Erro: GEMINI_API_KEY não está configurada!");
-        return null;
-    }
-    
-    // Endpoint do Gemini com modelo que FUNCIONA
-    $url = GEMINI_API_BASE . '/' . GEMINI_MODEL . ':generateContent?key=' . urlencode($apiKey);
-    
+    $apiKeys = GEMINI_MODELS; // placeholder para iteração correta abaixo
+    $keys = GEMINI_API_KEYS;
+    $models = GEMINI_MODELS;
+
     $data = [
         'contents' => [
             [
@@ -134,96 +130,75 @@ function callGeminiAPI($prompt) {
         ],
         'generationConfig' => [
             'maxOutputTokens' => 8192,
-            'temperature' => 0.6,
-            'thinkingConfig' => [
-                // Gemini 2.5 Pro pode pensar internamente por padrão,
-                // consumindo tokens do MESMO orçamento (maxOutputTokens) antes
-                // de escrever a resposta visível. Com prompts longos e
-                // detalhados, isso pode consumir quase todo o orçamento e
-                // deixar a resposta final truncada. thinkingBudget=0 desliga
-                // isto por completo, garantindo que TODO o orçamento vai para
-                // o conteúdo visível.
-                'thinkingBudget' => 0
-            ]
+            'temperature' => 0.6
         ]
     ];
 
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json'
-        ],
-        CURLOPT_POSTFIELDS => json_encode($data),
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_SSL_VERIFYHOST => 2
-    ]);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    if (curl_errno($ch)) {
-        error_log("Erro cURL: " . curl_error($ch));
-        curl_close($ch);
-        return null;
-    }
-    
-    curl_close($ch);
-    
-    if ($httpCode !== 200) {
-        error_log("Erro API Gemini (HTTP $httpCode): " . $response);
-        return null;
-    }
-    
-    $responseData = json_decode($response, true);
-    
-    if (!$responseData || !isset($responseData['candidates'][0])) {
-        error_log("Resposta Gemini inválida: " . json_encode($responseData));
-        return null;
-    }
+    // Percorre cada chave disponível
+    foreach ($keys as $keyIndex => $apiKey) {
+        if (empty($apiKey)) continue; // Ignora se a chave estiver vazia no .env
 
-    $candidate = $responseData['candidates'][0];
+        // Para cada chave, tenta os modelos em ordem de preferência
+        foreach ($models as $modelName) {
+            $url = GEMINI_API_BASE . '/' . $modelName . ':generateContent?key=' . urlencode($apiKey);
 
-    // Regista sempre o finishReason nos logs do Render — ajuda a diagnosticar
-    // truncamentos futuros (ex: "MAX_TOKENS", "SAFETY", "STOP")
-    $finishReason = $candidate['finishReason'] ?? 'DESCONHECIDO';
-    error_log("Gemini finishReason: $finishReason");
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_TIMEOUT => 45,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-    // Junta TODAS as partes de texto (por segurança — o Gemini pode, em
-    // certos casos, dividir a resposta por várias 'parts')
-    $fullText = '';
-    if (isset($candidate['content']['parts']) && is_array($candidate['content']['parts'])) {
-        foreach ($candidate['content']['parts'] as $part) {
-            if (isset($part['text'])) {
-                $fullText .= $part['text'];
+            // Se a requisição for bem-sucedida (HTTP 200), processa e retorna
+            if ($httpCode === 200) {
+                $responseData = json_decode($response, true);
+                if ($responseData && isset($responseData['candidates'][0])) {
+                    $candidate = $responseData['candidates'][0];
+                    $finishReason = $candidate['finishReason'] ?? 'DESCONHECIDO';
+                    
+                    $fullText = '';
+                    if (isset($candidate['content']['parts']) && is_array($candidate['content']['parts'])) {
+                        foreach ($candidate['content']['parts'] as $part) {
+                            if (isset($part['text'])) {
+                                $fullText .= $part['text'];
+                            }
+                        }
+                    }
+
+                    if (!empty($fullText)) {
+                        return [
+                            'choices' => [
+                                [
+                                    'message' => [
+                                        'content' => $fullText
+                                    ]
+                                ]
+                            ],
+                            'finish_reason' => $finishReason
+                        ];
+                    }
+                }
             }
+
+            // Se deu erro de limite (429) ou indisponibilidade, regista no log e tenta o próximo modelo/chave
+            error_log("Aviso: Chave #{$keyIndex} com o modelo {$modelName} falhou (HTTP $httpCode). Tentando alternativa...");
         }
     }
 
-    if (empty($fullText)) {
-        error_log("Gemini não devolveu texto. Resposta completa: " . json_encode($responseData));
-        return null;
-    }
-
-    // Converter para formato compatível
-    return [
-        'choices' => [
-            [
-                'message' => [
-                    'content' => $fullText
-                ]
-            ]
-        ],
-        'finish_reason' => $finishReason
-    ];
+    error_log("Erro crítico: Todas as chaves e modelos do Gemini falharam ou esgotaram as cotas.");
+    return null;
 }
 
 /**
  * Busca uma imagem real relacionada com a query na API do Unsplash.
- * Devolve null se não houver chave configurada ou se a pesquisa falhar —
- * quem chamar esta função deve ter sempre um plano B (ex: Picsum).
  */
 function getUnsplashImage($query) {
     if (empty(UNSPLASH_API_KEY)) {
@@ -243,7 +218,6 @@ function getUnsplashImage($query) {
     curl_close($ch);
 
     if ($httpCode !== 200) {
-        error_log("Unsplash API erro (HTTP $httpCode): $response");
         return null;
     }
 
@@ -275,7 +249,6 @@ function generateToken($userId) {
     return "$hE.$pE.$sE";
 }
 
-// ✅ NOVO: Validação de JWT juntada aqui para não depender de um ficheiro auth.php à parte
 function validateToken($token) {
     $jwt_secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
 
@@ -311,18 +284,15 @@ function validateToken($token) {
 function getAuthUserId() {
     $authHeader = '';
 
-    // 1. Tentar getallheaders() (funciona na maioria dos casos)
     if (function_exists('getallheaders')) {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
     }
 
-    // 2. Fallback: $_SERVER directo (Apache às vezes só expõe aqui)
     if (empty($authHeader)) {
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     }
 
-    // 3. Fallback: Apache com mod_rewrite renomeia para REDIRECT_HTTP_AUTHORIZATION
     if (empty($authHeader)) {
         $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
     }
