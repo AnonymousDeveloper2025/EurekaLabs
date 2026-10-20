@@ -1,58 +1,13 @@
 <?php
-require_once '../config.php';
-require_once __DIR__ . '/idefy-prompts.php';
-header('Content-Type: application/json; charset=utf-8');
-$userId = requireAuth();
-@set_time_limit(180);
-
-$input       = json_decode(file_get_contents('php://input'), true) ?: [];
-$id          = intval($input['id'] ?? 0);
-$instruction = idefyClean($input['instruction'] ?? '', 2500);
-if (!$id || $instruction === '') idefyFail(400, 'Indica a ideia e o que queres alterar.');
-
-try {
-    $db = getDBConnection();
-    $q = $db->prepare('SELECT id,category,title,content,mode,flow FROM ideas WHERE id=? AND user_id=?');
-    $q->execute([$id, $userId]);
-    $old = $q->fetch();
-    if (!$old) idefyFail(404, 'Ideia não encontrada.');
-
-    $mode = (($old['mode'] ?? 'simple') === 'full') ? 'full' : 'simple';
-    $flow = $old['flow'] ?? 'develop';
-    $theme = idefyDetectTheme($old['category'], $old['title']);
-
-    // Se a ideia já tem a casca Idefy, o modelo recebe a estrutura (HTML); senão, só o texto.
-    $fragment = idefyExtractFragment($old['content'], 28000);
-    $prompt = idefyRefactorPrompt([
-        'title' => $old['title'], 'category' => $old['category'], 'mode' => $mode, 'theme' => $theme,
-        'format' => $fragment !== null ? 'html' : 'texto',
-        'content' => $fragment !== null ? $fragment : idefyPlainText($old['content'], 18000),
-        'request' => $instruction,
-    ]);
-
-    $frag = idefyProducePlan($prompt, $mode);
-    if ($frag === null) idefyFail(502, 'O Idefy não conseguiu refatorar esta ideia.');
-
-    $frag  = idefyResolveImages($frag);
-    $title = idefyTitleFrom($frag, $old['title']);
-    $html  = idefyWrap($frag, $theme, $mode);
-
-    $db->beginTransaction();
-    $ins = $db->prepare('INSERT INTO ideas (user_id,category,title,content,mode,flow,created_at) VALUES (?,?,?,?,?,?,NOW())');
-    $ins->execute([$userId, $old['category'], $title, $html, $mode, $flow]);
-    $newId = (int)$db->lastInsertId('ideas_id_seq');
-    $del = $db->prepare('DELETE FROM ideas WHERE id=? AND user_id=?');
-    $del->execute([$id, $userId]);
-    $db->commit();
-
-    echo json_encode(['success' => true, 'idea' => [
-        'id' => $newId, 'category' => $old['category'], 'title' => $title, 'content' => $html,
-        'mode' => $mode, 'flow' => $flow, 'theme' => $theme, 'saved' => false,
-        'created_at' => date('Y-m-d H:i:s'),
-    ]], JSON_UNESCAPED_UNICODE);
-} catch (Exception $e) {
-    if (isset($db) && $db->inTransaction()) $db->rollBack();
-    error_log('Erro refactor-idea: ' . $e->getMessage());
-    idefyFail(500, 'Erro ao substituir a ideia na base de dados.');
-}
+require_once '../config.php'; header('Content-Type: application/json; charset=utf-8'); $userId=requireAuth();
+$input=json_decode(file_get_contents('php://input'),true)?:[];$id=intval($input['id']??0);$instruction=trim($input['instruction']??'');
+if(!$id||$instruction===''){http_response_code(400);echo json_encode(['success'=>false,'message'=>'Indica a ideia e o que queres alterar.']);exit;}
+try{$db=getDBConnection();$q=$db->prepare('SELECT id,category,title,content,mode,flow FROM ideas WHERE id=? AND user_id=?');$q->execute([$id,$userId]);$old=$q->fetch();if(!$old){http_response_code(404);echo json_encode(['success'=>false,'message'=>'Ideia não encontrada.']);exit;}
+$businessLike=(bool)preg_match('/negócio|negocio|empreend|venda|comérc|comerc|finance|renda|serviço|servico|agric|turismo|marketing|startup|loja|freelance|invest|mercado|cliente|produto/i', "{$old['title']} {$old['category']} {$instruction}");
+$angolaContext=$businessLike?"Como é um tema de negócio ou semelhante, adapta a versão a Angola: valores em Kz, poder de compra, informalidade, pagamentos móveis, internet/logística, oportunidades e problemas locais, e cidades/províncias relevantes sem inventar estatísticas.":"Não forces contexto angolano quando o tema não for de negócio ou semelhante.";
+$prompt="Tu és o Idefy. Refratora a ideia abaixo conforme o pedido do utilizador. Mantém o que já funciona, corrige o que foi pedido e torna o resultado mais específico.\nIDEIA ORIGINAL: {$old['title']}\nCONTEÚDO: ".mb_substr(strip_tags($old['content']),0,18000)."\nPEDIDO DE REFACTOR: ".mb_substr($instruction,0,2500)."\nResponde APENAS com HTML em português de Portugal, pronto para um body, começando com <h1>. Inclui <style> inline, secções claras, cronograma, diagramas HTML/CSS/SVG, tabelas responsivas, ícones e botões de links externos com target=\"_blank\" rel=\"noopener\" quando fizer sentido. Usa layout desktop largo (1200–1440px) e menu hambúrguer fixo/estático. $angolaContext Inclui barra de progresso no topo, botão de estatísticas e, para cada passo, um botão class=\"step-confirm\" com data-step-id único. Não uses localStorage nem sessionStorage. No iframe, envia window.parent.postMessage({type:'idefy-progress-ready'}) ao carregar; a cada alteração envia {type:'idefy-progress-change',completedSteps:[...],progressPercent:numero,stats:{...}}; recebe {type:'idefy-progress-load',progress:{completed_steps:[...],progress_percent:numero,stats:{...}}} e restaura o estado. Para imagens usa <img data-keyword=\"palavra-chave\" alt=\"...\"> e não inventes URLs.";
+$r=callGeminiAPI($prompt);$html=trim($r['choices'][0]['message']['content']??'');$html=preg_replace('/^```html\s*|```$/i','',$html);if($html===''){http_response_code(502);echo json_encode(['success'=>false,'message'=>'O Idefy não conseguiu refractorar esta ideia.']);exit;}
+preg_match_all('/data-keyword="([^"]+)"/',$html,$m);$cache=[];foreach(array_slice(array_unique($m[1]??[]),0,5) as $kw)$cache[$kw]=getUnsplashImage($kw)?:('https://picsum.photos/seed/'.urlencode($kw).'/900/600');$html=preg_replace_callback('/<img([^>]*)data-keyword="([^"]+)"([^>]*)>/i',function($x)use($cache){$attrs=$x[1].$x[3];$src=$cache[$x[2]]??('https://picsum.photos/seed/'.urlencode($x[2]).'/900/600');return '<img src="'.$src.'"'.$attrs.'>';},$html);$title=$old['title'];if(preg_match('/<h1[^>]*>(.*?)<\/h1>/is',$html,$tm))$title=trim(strip_tags($tm[1]));
+$db->beginTransaction();$ins=$db->prepare('INSERT INTO ideas (user_id,category,title,content,mode,flow,created_at) VALUES (?,?,?,?,?,?,NOW())');$ins->execute([$userId,$old['category'],$title,$html,$old['mode']??'simple',$old['flow']??'develop']);$newId=(int)$db->lastInsertId('ideas_id_seq');$del=$db->prepare('DELETE FROM ideas WHERE id=? AND user_id=?');$del->execute([$id,$userId]);$db->commit();echo json_encode(['success'=>true,'idea'=>['id'=>$newId,'category'=>$old['category'],'title'=>$title,'content'=>$html,'mode'=>$old['mode']??'simple','flow'=>$old['flow']??'develop','saved'=>false,'created_at'=>date('Y-m-d H:i:s')]],JSON_UNESCAPED_UNICODE);
+}catch(Exception $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('Erro refactor-idea: '.$e->getMessage());http_response_code(500);echo json_encode(['success'=>false,'message'=>'Erro ao substituir a ideia na base de dados.']);}
 ?>
