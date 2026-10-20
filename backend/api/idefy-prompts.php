@@ -303,7 +303,7 @@ function idefySanitizeFragment($html) {
     $h = idefyRe('#<(script|style|iframe|object|embed|form|template|svg|math|noscript|head|title)\b[^>]*>.*?<\/\1\s*>#is', '', $h);
     $allowed = '<h1><h2><h3><h4><p><br><hr><strong><b><em><i><u><small><mark><span><div><section><article><header><footer><aside><ul><ol><li><table><thead><tbody><tfoot><tr><th><td><caption><blockquote><code><pre><img><a><details><summary><figure><figcaption><dl><dt><dd><sup><sub><abbr><time><kbd><button>';
     $h = strip_tags($h, $allowed);
-    $h = idefyRe('/\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i', '', $h);
+    $h = idefyRe('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^']*\'|[^\s>]+)/i', '', $h);
     $h = idefyRe('/<a\s/i', '<a rel="noopener noreferrer" target="_blank" ', $h);
     $p = strpos($h, '<');
     if ($p !== false && $p > 0) $h = substr($h, $p);
