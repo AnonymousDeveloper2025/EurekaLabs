@@ -1,5 +1,22 @@
 <?php
-require_once '../config.php'; header('Content-Type: application/json; charset=utf-8'); $userId=requireAuth();
-$id=intval($_GET['id']??0); if(!$id){http_response_code(400);echo json_encode(['success'=>false,'message'=>'ID inválido.']);exit;}
-try{$db=getDBConnection();$check=$db->prepare('SELECT id FROM ideas WHERE id=? AND user_id=?');$check->execute([$id,$userId]);if(!$check->fetch()){http_response_code(404);echo json_encode(['success'=>false,'message'=>'Ideia não encontrada.']);exit;}$q=$db->prepare('SELECT id,idea_id,current_day,status,notes,voice_transcript,updated_at FROM idea_progress WHERE idea_id=? AND user_id=?');$q->execute([$id,$userId]);$p=$q->fetch();echo json_encode(['success'=>true,'progress'=>$p?:['idea_id'=>$id,'current_day'=>1,'status'=>'active','notes'=>'','voice_transcript'=>'']],JSON_UNESCAPED_UNICODE);}catch(Exception $e){error_log('Erro get-progress: '.$e->getMessage());http_response_code(500);echo json_encode(['success'=>false,'message'=>'Não foi possível carregar o progresso.']);}
+require_once '../config.php';
+require_once __DIR__ . '/idefy-prompts.php';
+header('Content-Type: application/json; charset=utf-8');
+$userId = requireAuth();
+
+$ideaId = intval($_GET['id'] ?? 0);
+if (!$ideaId) idefyFail(400, 'Ideia inválida.');
+
+try {
+    $db = getDBConnection();
+    idefyEnsureProgressTable($db);
+    $q = $db->prepare('SELECT p.* FROM idea_progress p JOIN ideas i ON i.id=p.idea_id AND i.user_id=p.user_id WHERE p.idea_id=? AND p.user_id=?');
+    $q->execute([$ideaId, $userId]);
+    $row = $q->fetch();
+    // progress = null quando ainda não há nada guardado (primeira abertura da ideia)
+    echo json_encode(['success' => true, 'progress' => $row ? idefyFormatProgress($row) : null], JSON_UNESCAPED_UNICODE);
+} catch (Exception $e) {
+    error_log('Erro get-progress: ' . $e->getMessage());
+    idefyFail(500, 'Não foi possível carregar o progresso.');
+}
 ?>
