@@ -59,6 +59,12 @@ try {
     runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS mode VARCHAR(20) DEFAULT 'simple'");
     runSafe($pdo, "ALTER TABLE ideas ADD COLUMN IF NOT EXISTS flow VARCHAR(20) DEFAULT 'develop'");
 
+    // Identidade Google opcional. A password continua a existir para manter
+    // compatibilidade com contas locais antigas e contas criadas pelo Google.
+    runSafe($pdo, "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255)");
+    runSafe($pdo, "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT");
+    runSafe($pdo, "CREATE UNIQUE INDEX IF NOT EXISTS users_google_sub_unique ON users (google_sub) WHERE google_sub IS NOT NULL");
+
     runSafe($pdo, "CREATE TABLE IF NOT EXISTS idea_progress (
         id SERIAL PRIMARY KEY,
         idea_id INTEGER NOT NULL REFERENCES ideas(id) ON DELETE CASCADE,
