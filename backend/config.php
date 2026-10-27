@@ -1,91 +1,70 @@
 <?php
 /**
- * EUREKA LABS - CONFIGURAÇÃO FINAL COM ROTAÇÃO DE CHAVES E MODELOS VÁLIDOS
- * Versão: 3.4 - Corrigido com base no teste real
+ * EUREKA LABS — CONFIGURAÇÃO CENTRAL
+ * Neon, Google Identity Services, JWT e Gemini Flash.
  */
 
 function loadLocalEnv($file) {
     if (!is_readable($file)) return;
-
     foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
         $line = trim($line);
         if ($line === '' || $line[0] === '#') continue;
         if (!preg_match('/^(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*)$/', $line, $match)) continue;
-
         $key = $match[1];
         $value = trim($match[2]);
         if (strlen($value) >= 2 && (($value[0] === '"' && substr($value, -1) === '"') || ($value[0] === "'" && substr($value, -1) === "'"))) {
             $value = substr($value, 1, -1);
         }
-        if (getenv($key) === false) putenv($key. '='. $value);
+        if (getenv($key) === false) putenv($key . '=' . $value);
     }
 }
 
-loadLocalEnv(__DIR__. DIRECTORY_SEPARATOR. '.env');
+loadLocalEnv(__DIR__ . DIRECTORY_SEPARATOR . '.env');
 
-// 1. Configurações de Base de Dados (PostgreSQL)
-define('DB_HOST', getenv('DB_HOST')?: '');
-define('DB_USER', getenv('DB_USER')?: '');
-define('DB_PASS', getenv('DB_PASS')?: '');
-define('DB_NAME', getenv('DB_NAME')?: 'idefy_db');
+// 1. PostgreSQL / Neon
+define('DB_HOST', getenv('DB_HOST') ?: '');
+define('DB_USER', getenv('DB_USER') ?: '');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// 2. Configurações das Múltiplas Chaves da API Gemini
-define('GEMINI_API_KEYS', [
-    getenv('GEMINI_API_KEY')?: '',
-    getenv('Gemini2_key')?: '',
-    getenv('Gemini3_key')?: ''
-]);
+// 2. Google Gemini — Flash é a primeira opção.
+$geminiPreferredModel = getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash';
+define('GEMINI_API_KEYS', array_values(array_unique(array_filter([
+    getenv('GEMINI_API_KEY') ?: '',
+    getenv('Gemini2_key') ?: '',
+    getenv('Gemini3_key') ?: ''
+]))));
+define('GEMINI_API_KEY', GEMINI_API_KEYS[0] ?? '');
+define('GEMINI_MODELS', array_values(array_unique([
+    $geminiPreferredModel,
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-pro'
+])));
+define('GEMINI_MODEL', GEMINI_MODELS[0]);
+define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
 
-// 2b. LISTA CORRIGIDA COM MODELOS QUE REALMENTE EXISTEM NA TUA CHAVE
-// Ordem: latest -> 2.5 -> 3.5 -> Gemma (fallback)
-define('GEMINI_MODELS', [
-    // Latest (os que tu pediu)
-    'models/gemini-flash-latest',
-    'models/gemini-flash-lite-latest',
-    'models/gemini-pro-latest',
+// 3. Integrações opcionais
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
+define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: '');
 
-    // Gemini 2.5 (estável)
-    'models/gemini-2.5-flash',
-    'models/gemini-2.5-flash-lite',
-    'models/gemini-2.5-pro',
-
-    // Gemini 3.x que FUNCIONOU no teu teste
-    'models/gemini-3.5-flash',
-    'models/gemini-3.5-flash-lite',
-    'models/gemini-3-flash-preview',
-    'models/gemini-3.1-flash-lite',
-
-    // Gemma como último recurso
-    'models/gemma-4-31b-it',
-    'models/gemma-4-26b-a4b-it'
-]);
-
-// MUDEI PARA v1 - v1beta estava dando 404 nos teus latest
-define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1');
-
-// 2c. Unsplash (opcional)
-define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY')?: '');
-
-// 3. Middleware de CORS
-$origin = $_SERVER['HTTP_ORIGIN']?? '';
-
+// 4. CORS
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed_origins = [
     'https://anonymousdeveloper2025.github.io',
     'http://eurekalabs.great-site.net',
     'https://eurekalabs.great-site.net'
 ];
-
-if (in_array($origin, $allowed_origins) || preg_match('/github\.io$/', parse_url($origin, PHP_URL_HOST)?? '') || preg_match('/great-site\.net$/', parse_url($origin, PHP_URL_HOST)?? '')) {
+$originHost = parse_url($origin, PHP_URL_HOST) ?? '';
+if (in_array($origin, $allowed_origins, true) || preg_match('/github\.io$/', $originHost) || preg_match('/great-site\.net$/', $originHost)) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    header("Access-Control-Allow-Origin: *");
+    header('Access-Control-Allow-Origin: *');
 }
-
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
 header('Access-Control-Max-Age: 3600');
-
-if (($_SERVER['REQUEST_METHOD']?? '') === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
@@ -96,11 +75,11 @@ function getDBConnection() {
         $useSsl = false;
         if (strpos($dbUrl, 'postgresql://') === 0 || strpos($dbUrl, 'postgres://') === 0) {
             $db = parse_url($dbUrl);
-            $host = $db['host'];
-            $port = $db['port']?? 5432;
-            $dbname = ltrim($db['path'], '/');
-            $user = $db['user'];
-            $pass = $db['pass'];
+            $host = $db['host'] ?? '';
+            $port = $db['port'] ?? 5432;
+            $dbname = ltrim($db['path'] ?? '', '/');
+            $user = $db['user'] ?? '';
+            $pass = $db['pass'] ?? '';
             $useSsl = true;
         } else {
             $host = DB_HOST;
@@ -109,24 +88,24 @@ function getDBConnection() {
             $user = DB_USER;
             $pass = DB_PASS;
         }
-
-        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname". ($useSsl? ';sslmode=require' : '');
-        $pdo = new PDO($dsn, $user, $pass, [
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname" . ($useSsl ? ';sslmode=require' : '');
+        return new PDO($dsn, $user, $pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_EMULATE_PREPARES => false
         ]);
-        return $pdo;
     } catch (PDOException $e) {
-        error_log("Erro BD: ". $e->getMessage());
+        error_log('Erro BD: ' . $e->getMessage());
         header('Content-Type: application/json');
         die(json_encode(['success' => false, 'message' => 'Erro na conexão com a base de dados.']));
     }
 }
 
 function callGeminiAPI($prompt) {
-    $keys = GEMINI_API_KEYS;
-    $models = GEMINI_MODELS;
+    if (empty(GEMINI_API_KEYS)) {
+        error_log('Erro: nenhuma chave Gemini está configurada.');
+        return null;
+    }
 
     $data = [
         'contents' => [['parts' => [['text' => $prompt]]]],
@@ -136,123 +115,109 @@ function callGeminiAPI($prompt) {
         ]
     ];
 
-    foreach ($keys as $keyIndex => $apiKey) {
-        if (empty($apiKey)) continue;
-
-        foreach ($models as $modelName) {
-            // IF para Gemma usar temperatura menor
-            if (strpos($modelName, 'gemma')!== false) {
-                $data['generationConfig']['temperature'] = 0.6;
-            } else {
-                $data['generationConfig']['temperature'] = 0.7;
-            }
-
-            $url = GEMINI_API_BASE. '/'. $modelName. ':generateContent?key='. urlencode($apiKey);
-
+    foreach (GEMINI_API_KEYS as $keyIndex => $apiKey) {
+        foreach (GEMINI_MODELS as $modelName) {
+            $url = GEMINI_API_BASE . '/' . rawurlencode($modelName) . ':generateContent?key=' . urlencode($apiKey);
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
                 CURLOPT_POSTFIELDS => json_encode($data),
-                CURLOPT_TIMEOUT => 45,
+                CURLOPT_TIMEOUT => 60,
                 CURLOPT_SSL_VERIFYPEER => true,
                 CURLOPT_SSL_VERIFYHOST => 2
             ]);
-
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
             curl_close($ch);
 
-            if ($httpCode === 200) {
-                $responseData = json_decode($response, true);
-                if ($responseData && isset($responseData['candidates'][0])) {
-                    $candidate = $responseData['candidates'][0];
-                    $finishReason = $candidate['finishReason']?? 'DESCONHECIDO';
-                    $fullText = '';
-                    if (isset($candidate['content']['parts']) && is_array($candidate['content']['parts'])) {
-                        foreach ($candidate['content']['parts'] as $part) {
-                            if (isset($part['text'])) $fullText.= $part['text'];
-                        }
-                    }
-                    if (!empty($fullText)) {
-                        return [
-                            'choices' => [['message' => ['content' => $fullText]]],
-                            'finish_reason' => $finishReason,
-                            'model_used' => $modelName // pra debug
-                        ];
-                    }
-                }
+            if ($curlError) {
+                error_log('Gemini cURL falhou para a chave ' . ($keyIndex + 1) . ': ' . $curlError);
+                continue;
             }
-            error_log("Aviso: Chave ".($keyIndex+1)." modelo {$modelName} falhou (HTTP $httpCode).");
+            if ($httpCode !== 200) {
+                error_log("Gemini modelo $modelName falhou (HTTP $httpCode).");
+                continue;
+            }
+
+            $responseData = json_decode($response, true);
+            $candidate = $responseData['candidates'][0] ?? null;
+            if (!$candidate) continue;
+            $fullText = '';
+            foreach (($candidate['content']['parts'] ?? []) as $part) {
+                if (isset($part['text'])) $fullText .= $part['text'];
+            }
+            if ($fullText !== '') {
+                return [
+                    'choices' => [['message' => ['content' => $fullText]]],
+                    'finish_reason' => $candidate['finishReason'] ?? 'DESCONHECIDO',
+                    'model_used' => $modelName
+                ];
+            }
         }
     }
-    error_log("Erro crítico: Todas as chaves e modelos falharam.");
+
+    error_log('Erro crítico: todas as chaves e modelos Gemini falharam.');
     return null;
 }
 
 function getUnsplashImage($query) {
     if (empty(UNSPLASH_API_KEY)) return null;
-    $url = 'https://api.unsplash.com/search/photos?query='. urlencode($query). '&per_page=1&orientation=landscape&client_id='. urlencode(UNSPLASH_API_KEY);
+    $url = 'https://api.unsplash.com/search/photos?query=' . urlencode($query) . '&per_page=1&orientation=landscape&client_id=' . urlencode(UNSPLASH_API_KEY);
     $ch = curl_init($url);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10]);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => true, CURLOPT_SSL_VERIFYHOST => 2]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    if ($httpCode!== 200) return null;
+    if ($httpCode !== 200) return null;
     $data = json_decode($response, true);
-    return $data['results'][0]['urls']['regular']?? null;
+    return $data['results'][0]['urls']['regular'] ?? null;
 }
 
 function isValidEmail($email) { return filter_var($email, FILTER_VALIDATE_EMAIL); }
 function hashPassword($password) { return password_hash($password, PASSWORD_BCRYPT); }
 function verifyPassword($password, $hash) { return password_verify($password, $hash); }
+
 function generateToken($userId) {
-    $jwt_secret = getenv('JWT_SECRET')?: 'eureka_labs_elite_secret_2026';
+    $secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
     $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
-    $payload = json_encode(['userId' => $userId, 'iat' => time()]);
-    $hE = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
-    $pE = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
-    $sig = hash_hmac('sha256', "$hE.$pE", $jwt_secret, true);
-    $sE = rtrim(strtr(base64_encode($sig), '+/', '-_'), '=');
-    return "$hE.$pE.$sE";
+    $payload = json_encode(['userId' => $userId, 'iat' => time(), 'exp' => time() + 86400]);
+    $headerEncoded = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
+    $payloadEncoded = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
+    $signature = hash_hmac('sha256', "$headerEncoded.$payloadEncoded", $secret, true);
+    $signatureEncoded = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
+    return "$headerEncoded.$payloadEncoded.$signatureEncoded";
 }
+
 function validateToken($token) {
-    $jwt_secret = getenv('JWT_SECRET')?: 'eureka_labs_elite_secret_2026';
-    if (!$token || empty($token)) return null;
+    $secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
+    if (!$token) return null;
     $parts = explode('.', $token);
-    if (count($parts)!== 3) return null;
-    list($headerEnc, $payloadEnc, $sigEnc) = $parts;
-    $base64UrlDecode = function($str) {
-        $padding = 4 - (strlen($str) % 4);
-        if ($padding!== 4) $str.= str_repeat('=', $padding);
-        return base64_decode(strtr($str, '-_', '+/'));
-    };
-    $signatureInput = "$headerEnc.$payloadEnc";
-    $expectedSigBinary = hash_hmac('sha256', $signatureInput, $jwt_secret, true);
-    $expectedSigUrl = rtrim(strtr(base64_encode($expectedSigBinary), '+/', '-_'), '=');
-    if (!hash_equals($expectedSigUrl, $sigEnc)) return null;
-    try {
-        $payloadJson = $base64UrlDecode($payloadEnc);
-        $payload = json_decode($payloadJson, true);
-        if (!$payload ||!isset($payload['userId'])) return null;
-        return $payload['userId'];
-    } catch (Exception $e) { return null; }
+    if (count($parts) !== 3) return null;
+    [$headerEncoded, $payloadEncoded, $signatureEncoded] = $parts;
+    $expected = rtrim(strtr(base64_encode(hash_hmac('sha256', "$headerEncoded.$payloadEncoded", $secret, true)), '+/', '-_'), '=');
+    if (!hash_equals($expected, $signatureEncoded)) return null;
+    $padding = 4 - (strlen($payloadEncoded) % 4);
+    if ($padding !== 4) $payloadEncoded .= str_repeat('=', $padding);
+    $payload = json_decode(base64_decode(strtr($payloadEncoded, '-_', '+/')), true);
+    if (!$payload || empty($payload['userId']) || (!empty($payload['exp']) && $payload['exp'] < time())) return null;
+    return $payload['userId'];
 }
+
 function getAuthUserId() {
     $authHeader = '';
     if (function_exists('getallheaders')) {
         $headers = getallheaders();
-        $authHeader = $headers['Authorization']?? ($headers['authorization']?? '');
+        $authHeader = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
     }
-    if (empty($authHeader)) $authHeader = $_SERVER['HTTP_AUTHORIZATION']?? '';
-    if (empty($authHeader)) $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION']?? '';
-    if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
-        $userId = validateToken($matches[1]);
-        if ($userId) return $userId;
-    }
+    if (!$authHeader) $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if (!$authHeader) $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) return validateToken($matches[1]);
     return null;
 }
+
 function requireAuth() {
     $userId = getAuthUserId();
     if (!$userId) {
