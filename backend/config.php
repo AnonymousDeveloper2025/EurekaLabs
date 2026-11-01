@@ -27,8 +27,8 @@ define('DB_USER', getenv('DB_USER') ?: '');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_NAME', getenv('DB_NAME') ?: 'idefy_db');
 
-// 2. Google Gemini — Flash é a primeira opção.
-$geminiPreferredModel = getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash';
+// 2. Google Gemini — ordem anterior de fallback.
+$geminiPreferredModel = getenv('GEMINI_MODEL') ?: 'gemini-flash-latest';
 define('GEMINI_API_KEYS', array_values(array_unique(array_filter([
     getenv('GEMINI_API_KEY') ?: '',
     getenv('Gemini2_key') ?: '',
@@ -37,9 +37,18 @@ define('GEMINI_API_KEYS', array_values(array_unique(array_filter([
 define('GEMINI_API_KEY', GEMINI_API_KEYS[0] ?? '');
 define('GEMINI_MODELS', array_values(array_unique([
     $geminiPreferredModel,
+    'gemini-flash-latest',
+    'gemini-flash-lite-latest',
+    'gemini-pro-latest',
     'gemini-2.5-flash',
     'gemini-2.5-flash-lite',
-    'gemini-2.5-pro'
+    'gemini-2.5-pro',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3-flash-preview',
+    'gemini-3.1-flash-lite',
+    'gemma-4-31b-it',
+    'gemma-4-26b-a4b-it'
 ])));
 define('GEMINI_MODEL', GEMINI_MODELS[0]);
 define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/models');
