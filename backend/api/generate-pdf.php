@@ -1,307 +1,294 @@
 <?php
 /**
- * GENERATE PDF — EUREKA LABS
+ * GENERATE PDF — EUREKA LABS / IDEFY
  *
- * ✅ CORRIGIDO: Fundo colorido em todas as páginas + lMargin
+ * Gerador de PDF temático com mPDF.
+ * Instalação: composer install --no-dev --optimize-autoloader
  */
 
-require_once '../config.php'; // já trata CORS e OPTIONS — não duplicar
+declare(strict_types=1);
 
-if ($_SERVER['REQUEST_METHOD']!== 'POST') {
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
-    header('Content-Type: application/json');
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit;
 }
 
 $userId = requireAuth();
-
 $input = json_decode(file_get_contents('php://input'), true);
-$ideaId = intval($input['id']?? 0);
+$ideaId = (int)($input['id'] ?? 0);
 
-if (!$ideaId) {
+if ($ideaId <= 0) {
     http_response_code(400);
-    header('Content-Type: application/json');
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => 'ID da ideia em falta.']);
     exit;
 }
 
 try {
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT id, title, content, category FROM ideas WHERE id =? AND user_id =?");
+    $stmt = $conn->prepare(
+        'SELECT id, title, content, category FROM ideas WHERE id = ? AND user_id = ?'
+    );
     $stmt->execute([$ideaId, $userId]);
-    $idea = $stmt->fetch();
+    $idea = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$idea) {
         http_response_code(404);
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'Ideia não encontrada.']);
         exit;
     }
-} catch (Exception $e) {
-    error_log("Erro generate-pdf (buscar ideia): ". $e->getMessage());
+} catch (Throwable $e) {
+    error_log('Erro generate-pdf (buscar ideia): ' . $e->getMessage());
     http_response_code(500);
-    header('Content-Type: application/json');
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => 'Erro ao carregar a ideia.']);
     exit;
 }
 
-require_once '../vendor/fpdf/fpdf.php';
-
-function utf8ToPdf($text) {
-    $converted = @iconv('UTF-8', 'CP1252//TRANSLIT', $text);
-    return $converted!== false? $converted : preg_replace('/[^\x20-\x7E]/', '', $text);
-}
-
-function getPdfTheme($category) {
+/** Temas definidos por palavra-chave/categoria. As fontes escolhidas existem no mPDF. */
+function getPdfTheme(string $category): array
+{
     $themes = [
-        'tecnologia' => ['bg' => [233, 240, 250], 'accent' => [37, 99, 235], 'font' => 'Courier', 'border' => 'solid'],
-        'negocio' => ['bg' => [231, 240, 237], 'accent' => [13, 118, 105], 'font' => 'Arial', 'border' => 'double'],
-        'criatividade' => ['bg' => [250, 235, 245], 'accent' => [219, 39, 119], 'font' => 'Times', 'border' => 'dashed'],
-        'aventura' => ['bg' => [237, 243, 227], 'accent' => [77, 124, 15], 'font' => 'Arial', 'border' => 'solid'],
-        'culinaria' => ['bg' => [253, 240, 220], 'accent' => [194, 108, 8], 'font' => 'Times', 'border' => 'double'],
-        'bem-estar' => ['bg' => [239, 236, 250], 'accent' => [109, 40, 217], 'font' => 'Times', 'border' => 'dashed'],
-        'viagem' => ['bg' => [224, 242, 246], 'accent' => [8, 132, 155], 'font' => 'Arial', 'border' => 'solid'],
-        'geral' => ['bg' => [235, 236, 245], 'accent' => [79, 70, 229], 'font' => 'Arial', 'border' => 'solid'],
+        'tecnologia' => [
+            'bg' => '#eef4ff', 'accent' => '#2563eb', 'dark' => '#163b82',
+            'font' => 'dejavusans', 'border' => 'solid', 'watermark' => 'TECNOLOGIA',
+        ],
+        'negocio' => [
+            'bg' => '#edf7f3', 'accent' => '#0d7669', 'dark' => '#075e54',
+            'font' => 'dejavusans', 'border' => 'double', 'watermark' => 'NEGÓCIO',
+        ],
+        'criatividade' => [
+            'bg' => '#fff0f8', 'accent' => '#db2777', 'dark' => '#9d174d',
+            'font' => 'dejavuserif', 'border' => 'dashed', 'watermark' => 'CRIATIVIDADE',
+        ],
+        'aventura' => [
+            'bg' => '#f2f8e9', 'accent' => '#4d7c0f', 'dark' => '#365314',
+            'font' => 'dejavusans', 'border' => 'solid', 'watermark' => 'AVENTURA',
+        ],
+        'culinaria' => [
+            'bg' => '#fff5e3', 'accent' => '#c26c08', 'dark' => '#8a4b08',
+            'font' => 'dejavuserif', 'border' => 'double', 'watermark' => 'CULINÁRIA',
+        ],
+        'bem-estar' => [
+            'bg' => '#f5f1ff', 'accent' => '#6d28d9', 'dark' => '#4c1d95',
+            'font' => 'dejavuserif', 'border' => 'dashed', 'watermark' => 'BEM-ESTAR',
+        ],
+        'viagem' => [
+            'bg' => '#eaf8fb', 'accent' => '#08849b', 'dark' => '#075e70',
+            'font' => 'dejavusans', 'border' => 'solid', 'watermark' => 'VIAGEM',
+        ],
+        'geral' => [
+            'bg' => '#f1f2f8', 'accent' => '#4f46e5', 'dark' => '#3730a3',
+            'font' => 'dejavusans', 'border' => 'solid', 'watermark' => 'IDEIA',
+        ],
     ];
-    $key = strtolower(trim($category));
-    if (isset($themes[$key])) return $themes[$key];
+
+    $key = function_exists('mb_strtolower')
+        ? mb_strtolower(trim($category), 'UTF-8')
+        : strtolower(trim($category));
+    if (isset($themes[$key])) {
+        return $themes[$key];
+    }
 
     $fallback = array_values($themes);
-    return $fallback[crc32($key) % count($fallback)];
+    return $fallback[abs((int)crc32($key)) % count($fallback)];
 }
 
-class ThemedPDF extends FPDF {
-    public $theme;
-    public $contentMargin = 20; // Margem pública
-    private $margin = 15;
-
-    function __construct() {
-        parent::__construct();
-        $this->SetAutoPageBreak(true, 24);
-    }
-
-    public function Header() {
-        // PINTA O FUNDO EM TODA PÁGINA
-        $this->SetFillColor($this->theme['bg'][0], $this->theme['bg'][1], $this->theme['bg'][2]);
-        $this->Rect(0, 0, $this->GetPageWidth(), $this->GetPageHeight(), 'F');
-
-        [$r, $g, $b] = $this->theme['accent'];
-        $this->SetDrawColor($r, $g, $b);
-        $m = $this->margin - 5;
-        if ($this->theme['border'] === 'double') {
-            $this->SetLineWidth(0.9);
-            $this->Rect($m, $m, 210 - 2 * $m, 297 - 2 * $m);
-            $this->SetLineWidth(0.3);
-            $this->Rect($m + 2.2, $m + 2.2, 210 - 2 * ($m + 2.2), 297 - 2 * ($m + 2.2));
-        } elseif ($this->theme['border'] === 'dashed') {
-            $this->SetLineWidth(0.6);
-            $this->dashedRect($m, $m, 210 - 2 * $m, 297 - 2 * $m, 3, 2);
-        } else {
-            $this->SetLineWidth(0.7);
-            $this->Rect($m, $m, 210 - 2 * $m, 297 - 2 * $m);
-        }
-        $this->SetLineWidth(0.2);
-
-        $this->SetY($this->margin + 2);
-        $this->SetFont($this->theme['font'], 'B', 19);
-        $this->SetTextColor($r, $g, $b);
-        $this->Cell(0, 10, 'Eureka Labs - Idefy', 0, 1, 'C');
-        $this->SetFont($this->theme['font'], 'I', 9);
-        $this->SetTextColor(90, 90, 90);
-        $this->Cell(0, 5, utf8ToPdf('Gerador de Ideias'), 0, 1, 'C');
-        $this->Ln(4);
-    }
-
-    public function Footer() {
-        $this->SetY(-20);
-        [$r, $g, $b] = $this->theme['accent'];
-        $this->SetFont($this->theme['font'], 'I', 8);
-        $this->SetTextColor($r, $g, $b);
-        $this->Cell(0, 10, utf8ToPdf('Página '. $this->PageNo()), 0, 0, 'C');
-    }
-
-    public function dashedRect($x, $y, $w, $h, $dash, $gap) {
-        $this->dashedLine($x, $y, $x + $w, $y, $dash, $gap);
-        $this->dashedLine($x + $w, $y, $x + $w, $y + $h, $dash, $gap);
-        $this->dashedLine($x + $w, $y + $h, $x, $y + $h, $dash, $gap);
-        $this->dashedLine($x, $y + $h, $x, $y, $dash, $gap);
-    }
-
-    public function dashedLine($x1, $y1, $x2, $y2, $dash, $gap) {
-        $dist = sqrt(($x2 - $x1) ** 2 + ($y2 - $y1) ** 2);
-        if ($dist < 0.01) return;
-        $steps = (int) floor($dist / ($dash + $gap));
-        $dx = ($x2 - $x1) / $dist;
-        $dy = ($y2 - $y1) / $dist;
-        $x = $x1; $y = $y1;
-        for ($i = 0; $i < $steps; $i++) {
-            $xEnd = $x + $dx * $dash;
-            $yEnd = $y + $dy * $dash;
-            $this->Line($x, $y, $xEnd, $yEnd);
-            $x = $xEnd + $dx * $gap;
-            $y = $yEnd + $dy * $gap;
-        }
-    }
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-$theme = getPdfTheme($idea['category']?? 'geral');
-
-$rawContent = $idea['content'];
-$rawContent = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $rawContent);
-$rawContent = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $rawContent);
-
-libxml_use_internal_errors(true);
-$dom = new DOMDocument();
-$dom->loadHTML('<?xml encoding="utf-8"?><div>'. $rawContent. '</div>');
-libxml_clear_errors();
-$rootDiv = $dom->getElementsByTagName('div')->item(0);
-
-$blockTags = ['h1', 'h2', 'h3', 'h4', 'p', 'div', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'section', 'article', 'blockquote'];
-$imageCache = [];
-$imagesInserted = 0;
-$MAX_IMAGES = 6;
-
-function insertPdfImage($pdf, $url, &$imageCache, &$imagesInserted, $maxImages) {
-    if ($imagesInserted >= $maxImages) return;
-    try {
-        if (!isset($imageCache[$url])) {
-            $data = @file_get_contents($url);
-            if (!$data) { $imageCache[$url] = false; return; }
-            $path = sys_get_temp_dir(). '/idefy_'. md5($url). '.jpg';
-            file_put_contents($path, $data);
-            $imageCache[$url] = $path;
-        }
-        $path = $imageCache[$url];
-        if (!$path ||!file_exists($path)) return;
-
-        $usableWidth = $pdf->GetPageWidth() - 2 * $pdf->contentMargin;
-        $displayHeight = $usableWidth * 0.6;
-        $dims = @getimagesize($path);
-        if ($dims && $dims[0] > 0) {
-            $displayHeight = $usableWidth * ($dims[1] / $dims[0]);
-        }
-        if ($pdf->GetY() + $displayHeight > 270) $pdf->AddPage();
-        $pdf->Ln(3);
-        $pdf->Image($path, ($pdf->GetPageWidth() - $usableWidth) / 2, $pdf->GetY(), $usableWidth, $displayHeight);
-        $pdf->SetY($pdf->GetY() + $displayHeight + 4);
-        $imagesInserted++;
-    } catch (Exception $e) {
-        error_log("Erro generate-pdf (imagem $url): ". $e->getMessage());
+/**
+ * Baixa imagens remotas uma única vez e transforma-as em data URI.
+ * Assim o PDF não depende de allow_url_fopen durante a renderização do mPDF.
+ */
+function imageAsDataUri(string $url, array &$cache, int &$count, int $max = 6): ?string
+{
+    if ($count >= $max || !preg_match('#^https?://#i', $url)) {
+        return null;
     }
+    if (array_key_exists($url, $cache)) {
+        return $cache[$url] ?: null;
+    }
+
+    $cache[$url] = false;
+    $context = stream_context_create([
+        'http' => ['timeout' => 8, 'follow_location' => 0, 'user_agent' => 'Idefy-PDF/1.0'],
+        'https' => ['timeout' => 8, 'follow_location' => 0, 'user_agent' => 'Idefy-PDF/1.0'],
+    ]);
+    $data = @file_get_contents($url, false, $context, 0, 5 * 1024 * 1024 + 1);
+    if ($data === false || strlen($data) > 5 * 1024 * 1024) {
+        return null;
+    }
+    $info = @getimagesizefromstring($data);
+    $mime = $info['mime'] ?? '';
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!$info || !in_array($mime, $allowed, true)) {
+        return null;
+    }
+
+    $count++;
+    $cache[$url] = 'data:' . $mime . ';base64,' . base64_encode($data);
+    return $cache[$url];
 }
 
-function renderNode($pdf, DOMNode $node, $theme, &$imageCache, &$imagesInserted, $maxImages) {
-    global $blockTags;
-    foreach ($node->childNodes as $child) {
-        if ($child->nodeType!== XML_ELEMENT_NODE) continue;
-        $tag = strtolower($child->nodeName);
+/** Sanitiza HTML do utilizador, preservando estrutura e formatação útil. */
+function cleanRichHtml(string $html): string
+{
+    $html = preg_replace('/<(script|style|iframe|object|embed|form)\b[^>]*>.*?<\/\1>/is', '', $html) ?? '';
+    libxml_use_internal_errors(true);
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    $dom->loadHTML('<?xml encoding="UTF-8"><div id="pdf-root">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    $root = $dom->getElementById('pdf-root');
+    if (!$root) {
+        return nl2br(e(strip_tags($html)));
+    }
 
-        if ($tag === 'img') {
-            $src = $child->getAttribute('src');
-            if ($src) insertPdfImage($pdf, $src, $imageCache, $imagesInserted, $maxImages);
-            continue;
-        }
-
-        $text = trim(preg_replace('/\s+/', ' ', $child->textContent));
-        if ($text === '') continue;
-
-        [$r, $g, $b] = $theme['accent'];
-
-        if (in_array($tag, ['h1', 'h2', 'h3', 'h4'])) {
-            $pdf->Ln(4);
-            $pdf->SetFillColor($r, $g, $b);
-            $pdf->Rect($pdf->GetX(), $pdf->GetY() + 2, 3.2, 3.2, 'F');
-            $pdf->SetX($pdf->GetX() + 6);
-            $pdf->SetFont($theme['font'], 'B', $tag === 'h1'? 16 : ($tag === 'h2'? 14 : 12));
-            $pdf->SetTextColor($r, $g, $b);
-            $pdf->MultiCell(0, 7, utf8ToPdf($text));
-            $pdf->SetFont($theme['font'], '', 11);
-            $pdf->SetTextColor(30, 30, 30);
-            $pdf->Ln(1);
-        } elseif ($tag === 'blockquote' || $tag === 'q') {
-            $startY = $pdf->GetY();
-            $pdf->SetX($pdf->contentMargin + 8);
-            $pdf->SetFont($theme['font'], 'I', 11);
-            $pdf->SetTextColor(70, 70, 70);
-            $pdf->MultiCell(0, 6, utf8ToPdf('" '. $text. ' "'));
-            $endY = $pdf->GetY();
-            $pdf->SetDrawColor($r, $g, $b);
-            $pdf->SetLineWidth(1);
-            $pdf->Line($pdf->contentMargin + 4, $startY + 1, $pdf->contentMargin + 4, $endY - 1);
-            $pdf->SetLineWidth(0.2);
-            $pdf->SetFont($theme['font'], '', 11);
-            $pdf->SetTextColor(30, 30, 30);
-            $pdf->Ln(2);
-        } elseif ($tag === 'li') {
-            $pdf->SetFillColor($r, $g, $b);
-            $bx = $pdf->GetX() + 2;
-            $by = $pdf->GetY() + 2.3;
-            $pdf->Rect($bx, $by, 1.8, 1.8, 'F');
-            $pdf->SetX($pdf->GetX() + 7);
-            $pdf->MultiCell(0, 5.5, utf8ToPdf($text));
-        } else {
-            $hasBlockChild = false;
-            foreach ($child->childNodes as $grandchild) {
-                if ($grandchild->nodeType === XML_ELEMENT_NODE && (in_array(strtolower($grandchild->nodeName), $blockTags) || strtolower($grandchild->nodeName) === 'img')) {
-                    $hasBlockChild = true;
-                    break;
+    $allowed = [
+        'p','br','div','section','article','h1','h2','h3','h4','h5','strong','b','em','i',
+        'u','s','blockquote','ul','ol','li','a','img','table','thead','tbody','tfoot','tr','th','td','hr',
+    ];
+    $out = '';
+    $walk = function (DOMNode $node) use (&$walk, &$out, $allowed): void {
+        foreach ($node->childNodes as $child) {
+            if ($child->nodeType === XML_TEXT_NODE) {
+                $out .= e(preg_replace('/\s+/u', ' ', $child->nodeValue ?? '') ?? '');
+                continue;
+            }
+            if ($child->nodeType !== XML_ELEMENT_NODE) {
+                continue;
+            }
+            $tag = strtolower($child->nodeName);
+            if (!in_array($tag, $allowed, true)) {
+                $walk($child);
+                continue;
+            }
+            if ($tag === 'img') {
+                $src = trim($child->getAttribute('src'));
+                if (preg_match('#^https?://#i', $src)) {
+                    $out .= '<img data-pdf-src="' . e($src) . '" alt="' . e($child->getAttribute('alt')) . '">';
                 }
+                continue;
             }
-            if ($hasBlockChild) {
-                renderNode($pdf, $child, $theme, $imageCache, $imagesInserted, $maxImages);
-            } elseif (in_array($tag, ['p', 'span', 'strong', 'em', 'b', 'i', 'td', 'th'])) {
-                $pdf->MultiCell(0, 5.5, utf8ToPdf($text));
-                $pdf->Ln(1);
+            if ($tag === 'a') {
+                $href = trim($child->getAttribute('href'));
+                $href = preg_match('#^https?://#i', $href) ? $href : '#';
+                $out .= '<a href="' . e($href) . '">';
+                $walk($child);
+                $out .= '</a>';
+                continue;
             }
+            $out .= '<' . $tag . '>';
+            $walk($child);
+            $out .= '</' . $tag . '>';
         }
-    }
+    };
+    $walk($root);
+    return $out;
 }
 
-$pdf = new ThemedPDF();
-$pdf->theme = $theme;
-$pdf->SetMargins(20, 10, 20);
-$pdf->SetAutoPageBreak(true, 24);
-$pdf->AddPage();
-
-// Define a cor de texto e fill padrão pra não vir branco
-$pdf->SetFillColor($theme['bg'][0], $theme['bg'][1], $theme['bg'][2]);
-$pdf->SetTextColor(30, 30, 30);
-
-[$ra, $ga, $ba] = $theme['accent'];
-$pdf->SetFont($theme['font'], 'B', 18);
-$pdf->SetTextColor($ra, $ga, $ba);
-$pdf->MultiCell(0, 8, utf8ToPdf($idea['title']));
-$pdf->Ln(3);
-
-$pdf->SetFont($theme['font'], '', 11);
-$pdf->SetTextColor(30, 30, 30);
-
-if ($rootDiv) {
-    renderNode($pdf, $rootDiv, $theme, $imageCache, $imagesInserted, $MAX_IMAGES);
-} else {
-    $plain = trim(preg_replace('/\s+/', ' ', strip_tags($rawContent)));
-    $pdf->MultiCell(0, 5.5, utf8ToPdf($plain));
+function replaceRemoteImages(string $html, array &$cache, int &$count): string
+{
+    return preg_replace_callback('/<img\s+data-pdf-src="([^"]*)"[^>]*>/i', function ($m) use (&$cache, &$count) {
+        $src = imageAsDataUri(html_entity_decode($m[1], ENT_QUOTES, 'UTF-8'), $cache, $count);
+        return $src ? '<img src="' . e($src) . '" alt="imagem">' : '';
+    }, $html) ?? '';
 }
 
-foreach ($imageCache as $path) {
-    if ($path && file_exists($path)) @unlink($path);
-}
+$theme = getPdfTheme((string)($idea['category'] ?? 'geral'));
+$imageCache = [];
+$imageCount = 0;
+$bodyHtml = replaceRemoteImages(cleanRichHtml((string)$idea['content']), $imageCache, $imageCount);
 
-$pdf->Ln(8);
-$pdf->SetFont($theme['font'], 'I', 9);
-$pdf->SetTextColor(90, 90, 90);
-$pdf->Cell(0, 5, utf8ToPdf('Gerado em: '. date('d/m/Y H:i')), 0, 1, 'C');
-$pdf->Cell(0, 5, utf8ToPdf('© 2026 Eureka Labs - Todos os direitos reservados'), 0, 1, 'C');
+// Mantém a mesma paleta em todos os elementos, incluindo listas, tabelas e citações.
+$css = <<<CSS
+@page {
+  sheet-size: A4;
+  margin: 27mm 21mm 23mm 21mm;
+  background-color: {$theme['bg']};
+}
+body {
+  font-family: {$theme['font']};
+  color: #202124;
+  font-size: 10.8pt;
+  line-height: 1.55;
+  background-color: {$theme['bg']};
+}
+.page-frame { position: fixed; top: 8mm; left: 8mm; right: 8mm; bottom: 8mm; border: 0.55mm solid {$theme['accent']}; }
+.page-frame.double { border: 0.75mm double {$theme['accent']}; }
+.page-frame.dashed { border: 0.55mm dashed {$theme['accent']}; }
+.header-title { color: {$theme['accent']}; font-size: 19pt; font-weight: bold; text-align: center; letter-spacing: .2mm; }
+.header-subtitle { color: #6b7280; font-size: 8.5pt; text-align: center; margin-top: 1mm; }
+h1,h2,h3,h4,h5 { color: {$theme['dark']}; page-break-after: avoid; line-height: 1.25; }
+h1 { font-size: 17pt; border-bottom: 0.35mm solid {$theme['accent']}; padding-bottom: 2mm; }
+h2 { font-size: 14pt; margin-top: 7mm; }
+h3 { font-size: 12pt; margin-top: 5mm; }
+p { margin: 0 0 3.5mm 0; text-align: justify; }
+blockquote { border-left: 1.5mm solid {$theme['accent']}; background-color: #ffffffaa; padding: 3mm 4mm; margin: 4mm 0; color: #4b5563; font-style: italic; }
+ul,ol { margin-top: 2mm; margin-bottom: 4mm; padding-left: 8mm; }
+li { margin-bottom: 1.5mm; }
+li::marker { color: {$theme['accent']}; font-weight: bold; }
+table { width: 100%; border-collapse: collapse; margin: 4mm 0; page-break-inside: avoid; }
+th { background-color: {$theme['accent']}; color: #ffffff; font-weight: bold; }
+th,td { border: 0.25mm solid {$theme['accent']}; padding: 2mm; vertical-align: top; }
+img { max-width: 100%; height: auto; margin: 3mm auto; }
+hr { border: 0; border-top: 0.3mm solid {$theme['accent']}; margin: 5mm 0; }
+a { color: {$theme['dark']}; text-decoration: underline; }
+.meta { color: #6b7280; font-size: 8.5pt; text-align: center; margin-top: 7mm; }
+CSS;
 
 try {
-    $stmt = $conn->prepare("UPDATE ideas SET pdf_generated = TRUE, pdf_generated_at = NOW() WHERE id =? AND user_id =?");
-    $stmt->execute([$ideaId, $userId]);
-} catch (Exception $e) {
-    error_log("Erro generate-pdf (marcar pdf_generated): ". $e->getMessage());
-}
+    $tempDir = sys_get_temp_dir() . '/idefy-mpdf';
+    if (!is_dir($tempDir)) {
+        @mkdir($tempDir, 0775, true);
+    }
+    $mpdf = new Mpdf([
+        'mode' => 'utf-8', 'format' => 'A4', 'tempDir' => $tempDir,
+        'margin_left' => 21, 'margin_right' => 21, 'margin_top' => 27, 'margin_bottom' => 23,
+        'margin_header' => 8, 'margin_footer' => 8, 'default_font' => $theme['font'],
+        'autoScriptToLang' => true, 'autoLangToFont' => true, 'showImageErrors' => false,
+    ]);
+    $mpdf->SetTitle((string)$idea['title']);
+    $mpdf->SetAuthor('Eureka Labs - Idefy');
+    $mpdf->SetSubject('Ideia gerada no Idefy');
+    $mpdf->SetKeywords((string)($idea['category'] ?? 'ideia') . ', Idefy, Eureka Labs');
+    $mpdf->SetWatermarkText($theme['watermark'], 0.055);
+    $mpdf->showWatermarkText = true;
+    $mpdf->SetHTMLHeader('<div class="header-title">Eureka Labs · Idefy</div><div class="header-subtitle">Gerador de Ideias</div>');
+    $mpdf->SetHTMLFooter('<div style="text-align:center;color:' . $theme['accent'] . ';font-size:8.5pt">Página {PAGENO} de {nbpg} · © 2026 Eureka Labs</div>');
+    $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
+    $frameClass = 'page-frame ' . $theme['border'];
+    $document = '<div class="' . e($frameClass) . '"></div>';
+    $document .= '<h1>' . e((string)$idea['title']) . '</h1>';
+    $document .= $bodyHtml !== '' ? $bodyHtml : '<p>Sem conteúdo disponível.</p>';
+    $document .= '<div class="meta">Gerado em ' . e(date('d/m/Y H:i')) . '</div>';
+    $mpdf->WriteHTML($document, \Mpdf\HTMLParserMode::HTML_BODY);
 
-header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="ideia-'. $ideaId. '.pdf"');
-$pdf->Output('D', 'ideia-'. $ideaId. '.pdf');
-?>
+    try {
+        $stmt = $conn->prepare('UPDATE ideas SET pdf_generated = TRUE, pdf_generated_at = NOW() WHERE id = ? AND user_id = ?');
+        $stmt->execute([$ideaId, $userId]);
+    } catch (Throwable $e) {
+        error_log('Erro generate-pdf (marcar pdf_generated): ' . $e->getMessage());
+    }
+
+    $filename = 'ideia-' . $ideaId . '.pdf';
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    $mpdf->Output($filename, Destination::DOWNLOAD);
+} catch (Throwable $e) {
+    error_log('Erro generate-pdf (mPDF): ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'message' => 'Não foi possível gerar o PDF. Verifique a instalação do mPDF.']);
+}

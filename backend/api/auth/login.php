@@ -13,12 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true) ?: [];
 
-$email = trim($input['email'] ?? '');
+$email = strtolower(trim($input['email'] ?? ''));
 $password = $input['password'] ?? '';
 
-if (empty($email) || empty($password)) {
+if (!isValidEmail($email) || !is_string($password) || $password === '' || strlen($password) > 4096) {
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Email e password são obrigatórios.']);
     exit;
 }

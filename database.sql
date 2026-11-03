@@ -1,37 +1,51 @@
--- ============================================
--- BASE DE DADOS: Eureka Labs - Idefy
--- ============================================
+-- Eureka Labs / Idefy — PostgreSQL (Neon)
+-- O backend usa PDO PostgreSQL; execute este ficheiro numa base PostgreSQL.
 
-CREATE DATABASE IF NOT EXISTS idefy_db;
-USE idefy_db;
-
--- Tabela de Utilizadores
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255),
+    google_sub VARCHAR(255),
+    avatar_url TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- Tabela de Ideias
+CREATE UNIQUE INDEX IF NOT EXISTS users_google_sub_unique
+    ON users (google_sub) WHERE google_sub IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS ideas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    saved TINYINT(1) DEFAULT 0,
-    pdf_generated TINYINT(1) DEFAULT 0,
-    pdf_generated_at DATETIME NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    image_url TEXT,
+    saved BOOLEAN NOT NULL DEFAULT FALSE,
+    pdf_generated BOOLEAN NOT NULL DEFAULT FALSE,
+    pdf_generated_at TIMESTAMP NULL,
+    mode VARCHAR(20) NOT NULL DEFAULT 'simple',
+    flow VARCHAR(20) NOT NULL DEFAULT 'develop',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- Tabela de Estatísticas (Opcional para monitorização)
-CREATE TABLE IF NOT EXISTS stats (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    total_ideas INT DEFAULT 0,
-    total_pdfs INT DEFAULT 0,
-    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS idea_progress (
+    id SERIAL PRIMARY KEY,
+    idea_id INTEGER NOT NULL REFERENCES ideas(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    current_day INTEGER NOT NULL DEFAULT 1,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    notes TEXT NOT NULL DEFAULT '',
+    voice_transcript TEXT NOT NULL DEFAULT '',
+    completed_steps JSONB NOT NULL DEFAULT '[]'::jsonb,
+    progress_percent INTEGER NOT NULL DEFAULT 0,
+    stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (idea_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS ideas_user_created_idx
+    ON ideas (user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS progress_user_idx
+    ON idea_progress (user_id, updated_at DESC);

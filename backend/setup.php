@@ -82,9 +82,16 @@ try {
         status VARCHAR(20) DEFAULT 'active',
         notes TEXT DEFAULT '',
         voice_transcript TEXT DEFAULT '',
+        completed_steps JSONB NOT NULL DEFAULT '[]'::jsonb,
+        progress_percent INTEGER NOT NULL DEFAULT 0,
+        stats JSONB NOT NULL DEFAULT '{}'::jsonb,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (idea_id, user_id)
     )");
+
+    runSafe($pdo, "ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS completed_steps JSONB NOT NULL DEFAULT '[]'::jsonb");
+    runSafe($pdo, "ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS progress_percent INTEGER NOT NULL DEFAULT 0");
+    runSafe($pdo, "ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS stats JSONB NOT NULL DEFAULT '{}'::jsonb");
 
     echo json_encode(["success" => true, "message" => "Tabelas criadas/actualizadas com sucesso no PostgreSQL!"]);
 

@@ -119,7 +119,7 @@
 
                     <div class="form-group">
                         <label><i data-lucide="lock"></i> Palavra-passe</label>
-                        <input type="password" id="password" class="form-input" required placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6">
+                        <input type="password" id="password" class="form-input" required placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8">
                     </div>
 
                     <div class="form-group">
@@ -192,8 +192,8 @@
                 showRegisterError('As palavras-passe não coincidem.');
                 return;
             }
-            if (password.length < 6) {
-                showRegisterError('A palavra-passe deve ter pelo menos 6 caracteres.');
+            if (password.length < 8) {
+                showRegisterError('A palavra-passe deve ter pelo menos 8 caracteres.');
                 return;
             }
 

@@ -238,6 +238,9 @@ function idefyEnsureProgressTable($db) {
         completed_steps TEXT NOT NULL DEFAULT '[]', progress_percent INTEGER NOT NULL DEFAULT 0,
         stats TEXT NOT NULL DEFAULT '{}', updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
         PRIMARY KEY (idea_id, user_id))");
+    $db->exec("ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS completed_steps TEXT NOT NULL DEFAULT '[]'");
+    $db->exec("ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS progress_percent INTEGER NOT NULL DEFAULT 0");
+    $db->exec("ALTER TABLE idea_progress ADD COLUMN IF NOT EXISTS stats TEXT NOT NULL DEFAULT '{}'");
     $done = true;
 }
 

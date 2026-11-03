@@ -1,0 +1,16 @@
+{
+  "name": "eureka-labs/idefy-backend",
+  "description": "Backend do Eureka Labs / Idefy",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "ext-dom": "*",
+    "ext-gd": "*",
+    "ext-mbstring": "*",
+    "mpdf/mpdf": "^8.2"
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
+  }
+}

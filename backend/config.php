@@ -56,19 +56,21 @@ define('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com/v1beta/mode
 // 3. Integrações opcionais
 define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
 define('UNSPLASH_API_KEY', getenv('UNSPLASH_API_KEY') ?: '');
+define('FRONTEND_URL', rtrim(getenv('FRONTEND_URL') ?: 'https://anonymousdeveloper2025.github.io', '/'));
 
 // 4. CORS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowed_origins = [
+$allowed_origins = array_values(array_unique(array_filter([
+    FRONTEND_URL,
     'https://anonymousdeveloper2025.github.io',
     'http://eurekalabs.great-site.net',
-    'https://eurekalabs.great-site.net'
-];
-$originHost = parse_url($origin, PHP_URL_HOST) ?? '';
-if (in_array($origin, $allowed_origins, true) || preg_match('/github\.io$/', $originHost) || preg_match('/great-site\.net$/', $originHost)) {
-    header("Access-Control-Allow-Origin: $origin");
-} else {
-    header('Access-Control-Allow-Origin: *');
+    'https://eurekalabs.great-site.net',
+    getenv('APP_ENV') === 'development' ? 'http://localhost:3000' : null,
+    getenv('APP_ENV') === 'development' ? 'http://127.0.0.1:5500' : null,
+])));
+if ($origin !== '' && in_array($origin, $allowed_origins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
 }
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Origin, Accept');
@@ -190,7 +192,10 @@ function hashPassword($password) { return password_hash($password, PASSWORD_BCRY
 function verifyPassword($password, $hash) { return password_verify($password, $hash); }
 
 function generateToken($userId) {
-    $secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
+    $secret = getenv('JWT_SECRET') ?: '';
+    if ($secret === '') {
+        throw new RuntimeException('JWT_SECRET não configurado.');
+    }
     $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
     $payload = json_encode(['userId' => $userId, 'iat' => time(), 'exp' => time() + 86400]);
     $headerEncoded = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
@@ -201,7 +206,8 @@ function generateToken($userId) {
 }
 
 function validateToken($token) {
-    $secret = getenv('JWT_SECRET') ?: 'eureka_labs_elite_secret_2026';
+    $secret = getenv('JWT_SECRET') ?: '';
+    if ($secret === '') return null;
     if (!$token) return null;
     $parts = explode('.', $token);
     if (count($parts) !== 3) return null;
@@ -231,6 +237,7 @@ function requireAuth() {
     $userId = getAuthUserId();
     if (!$userId) {
         http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'Não autorizado. Token inválido ou expirado.']);
         exit;
     }

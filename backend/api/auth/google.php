@@ -13,12 +13,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 
-// Suporta 2 formatos: web (credential) e app nativo (email + sub)
+// Apenas aceitamos um ID token emitido pelo Google e validado no servidor.
+// Nunca confiar em email/sub enviados diretamente pelo cliente.
 $idToken = trim($input['credential'] ?? $input['id_token'] ?? '');
-$emailNativo = strtolower(trim($input['email'] ?? ''));
-$googleSubNativo = trim($input['id'] ?? $input['google_sub'] ?? $input['sub'] ?? '');
-$nameNativo = trim($input['name'] ?? 'Utilizador Google');
-$avatarNativo = trim($input['photo'] ?? $input['avatar_url'] ?? $input['picture'] ?? '');
 
 function googleTokenInfo($token) {
     $url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($token);
@@ -44,7 +41,6 @@ try {
     $avatar = '';
     $googleSub = '';
 
-    // MODO 1: WEB - com id_token
     if ($idToken !== '') {
         if (GOOGLE_CLIENT_ID === '') {
             http_response_code(503);
@@ -69,20 +65,9 @@ try {
         $avatar = trim($payload['picture'] ?? '');
         $googleSub = (string)$payload['sub'];
 
-    // MODO 2: APP NATIVO - sem id_token, vem direto do GoogleApiClient
-    } elseif ($emailNativo !== '' && $googleSubNativo !== '') {
-        if (!isValidEmail($emailNativo)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Email Google inválido.']);
-            exit;
-        }
-        $email = $emailNativo;
-        $name = $nameNativo;
-        $avatar = $avatarNativo;
-        $googleSub = $googleSubNativo;
     } else {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Credencial Google em falta.']);
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'É necessário enviar um ID token Google verificável.']);
         exit;
     }
 

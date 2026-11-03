@@ -13,13 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true) ?: [];
 
 $name = trim($input['name'] ?? '');
-$email = trim($input['email'] ?? '');
+$email = strtolower(trim($input['email'] ?? ''));
 $password = $input['password'] ?? '';
 
-if (empty($name) || empty($email) || empty($password)) {
+if ($name === '' || strlen($name) > 100 || !isValidEmail($email) ||
+    !is_string($password) || strlen($password) < 8 || strlen($password) > 4096) {
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Preenche todos os campos obrigatórios.']);
     exit;
 }
