@@ -3,7 +3,7 @@ ENV PORT=10000
 
 # Dependências PHP necessárias para PostgreSQL, mPDF e imagens.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev unzip \
+    && apt-get install -y --no-install-recommends libpq-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libonig-dev unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_pgsql mbstring gd \
     && rm -rf /var/lib/apt/lists/*
